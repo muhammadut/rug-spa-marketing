@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Rug Spa - Marketing Command Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-primary: #0a0e17;
+    --bg-secondary: #111827;
+    --bg-card: #1a2236;
+    --bg-card-hover: #1e2a42;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-teal: #14b8a6;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --accent-emerald: #10b981;
+    --accent-orange: #f97316;
+    --accent-indigo: #6366f1;
+    --accent-cyan: #06b6d4;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #1e293b;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh; width: 100vw;
+  }
+
+  /* ── Header ── */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px;
+    background: rgba(10, 14, 23, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent-blue); }
+  .header-badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    background: rgba(59,130,246,0.15); color: var(--accent-blue);
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+
+  /* ── Breadcrumb ── */
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 8px 24px;
+    position: fixed; top: 52px; left: 0; right: 0; z-index: 99;
+    background: rgba(10, 14, 23, 0.7);
+    backdrop-filter: blur(10px);
+    font-size: 13px;
+  }
+  .breadcrumb-item { color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+  .breadcrumb-item:hover { color: var(--accent-blue); }
+  .breadcrumb-item.active { color: var(--text-primary); font-weight: 600; cursor: default; }
+  .breadcrumb-sep { color: var(--text-muted); font-size: 10px; }
+
+  /* ── Canvas ── */
+  .canvas {
+    position: fixed; top: 88px; left: 0; right: 0; bottom: 0;
+    display: flex; overflow: hidden;
+  }
+
+  /* ── Graph Area ── */
+  .graph-area { flex: 1; position: relative; overflow: hidden; }
+  .graph-svg { width: 100%; height: 100%; }
+
+  /* ── Nodes ── */
+  .node-group { cursor: pointer; }
+  .node-group:hover .node-circle { filter: brightness(1.3); }
+  .node-circle {
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 8px rgba(59,130,246,0.3));
+  }
+  .node-label {
+    font-family: 'Inter', sans-serif; fill: var(--text-primary);
+    text-anchor: middle; pointer-events: none; font-weight: 600;
+  }
+  .node-sublabel {
+    font-family: 'Inter', sans-serif; fill: var(--text-secondary);
+    text-anchor: middle; pointer-events: none; font-size: 11px;
+  }
+  .link-line { stroke: rgba(59,130,246,0.15); stroke-width: 1.5; }
+
+  /* ── Detail Panel (side) ── */
+  .detail-panel {
+    width: 0; overflow: hidden;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border);
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column;
+  }
+  .detail-panel.open { width: 480px; }
+  .detail-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .detail-title { font-size: 20px; font-weight: 700; line-height: 1.3; }
+  .detail-category { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; font-weight: 600; }
+  .detail-close {
+    width: 32px; height: 32px; border-radius: 8px; border: none;
+    background: var(--bg-card); color: var(--text-secondary);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .detail-close:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+  .detail-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+  .detail-body::-webkit-scrollbar { width: 6px; }
+  .detail-body::-webkit-scrollbar-track { background: transparent; }
+  .detail-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .detail-section { margin-bottom: 20px; }
+  .detail-section-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); font-weight: 700; margin-bottom: 8px;
+  }
+  .detail-text { color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
+  .detail-text strong { color: var(--text-primary); }
+  .detail-list { list-style: none; padding: 0; }
+  .detail-list li {
+    padding: 8px 12px; margin-bottom: 5px;
+    background: var(--bg-card); border-radius: 8px;
+    font-size: 13px; color: var(--text-secondary);
+    line-height: 1.5; border-left: 3px solid var(--accent-blue);
+  }
+  .claude-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 5px;
+    background: rgba(139,92,246,0.15); color: var(--accent-purple);
+    font-size: 10px; font-weight: 600;
+  }
+  .priority-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .priority-high { background: rgba(244,63,94,0.15); color: var(--accent-rose); }
+  .priority-medium { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+  .priority-low { background: rgba(20,184,166,0.15); color: var(--accent-teal); }
+  .impact-meter { height: 6px; border-radius: 3px; background: var(--bg-primary); overflow: hidden; margin-top: 4px; }
+  .impact-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
+
+  /* ── DEEP DIVE PAGE ── */
+  .deep-dive {
+    position: fixed; top: 88px; left: 0; right: 0; bottom: 0;
+    background: var(--bg-primary);
+    overflow-y: auto; overflow-x: hidden;
+    z-index: 80;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .deep-dive.visible { display: block; opacity: 1; }
+  .deep-dive::-webkit-scrollbar { width: 8px; }
+  .deep-dive::-webkit-scrollbar-track { background: var(--bg-primary); }
+  .deep-dive::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .dd-hero {
+    padding: 48px 60px 36px;
+    border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .dd-hero::before {
+    content: ''; position: absolute; top: -40%; right: -10%; width: 400px; height: 400px;
+    border-radius: 50%; filter: blur(100px); opacity: 0.12; pointer-events: none;
+  }
+  .dd-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--text-muted); font-size: 13px; font-weight: 500;
+    cursor: pointer; margin-bottom: 16px; padding: 6px 12px;
+    border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg-card); transition: all 0.2s;
+  }
+  .dd-back:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+  .dd-hero-title { font-size: 36px; font-weight: 800; letter-spacing: -1px; line-height: 1.2; }
+  .dd-hero-sub { font-size: 16px; color: var(--text-secondary); margin-top: 10px; line-height: 1.6; max-width: 720px; }
+  .dd-hero-tags { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+  .dd-content { max-width: 1100px; margin: 0 auto; padding: 40px 60px 80px; }
+
+  .dd-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    margin-bottom: 36px;
+  }
+  @media (max-width: 900px) { .dd-grid { grid-template-columns: 1fr; } }
+
+  .dd-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px;
+    transition: all 0.25s ease; cursor: default;
+    position: relative; overflow: hidden;
+  }
+  .dd-card.clickable { cursor: pointer; }
+  .dd-card.clickable:hover { border-color: var(--accent-blue); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .dd-card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 14px;
+  }
+  .dd-card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .dd-card-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .dd-card-meta { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  .dd-section { margin-bottom: 40px; }
+  .dd-section-header {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--text-muted); font-weight: 700; margin-bottom: 16px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  .dd-section-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .dd-section-text { color: var(--text-secondary); font-size: 14px; line-height: 1.8; margin-bottom: 16px; }
+
+  .dd-step {
+    display: flex; gap: 16px; padding: 18px;
+    background: var(--bg-card); border-radius: 12px;
+    margin-bottom: 10px; border: 1px solid var(--border);
+  }
+  .dd-step-num {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px;
+  }
+  .dd-step-content { flex: 1; }
+  .dd-step-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .dd-step-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  .dd-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--bg-card); border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .dd-table th {
+    text-align: left; padding: 12px 16px; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+  }
+  .dd-table td {
+    padding: 12px 16px; font-size: 13px; color: var(--text-secondary);
+    border-bottom: 1px solid var(--border); line-height: 1.5;
+  }
+  .dd-table tr:last-child td { border-bottom: none; }
+  .dd-table td:first-child { color: var(--text-primary); font-weight: 600; }
+
+  .dd-checklist { list-style: none; padding: 0; }
+  .dd-checklist li {
+    padding: 10px 14px; margin-bottom: 6px;
+    background: var(--bg-card); border-radius: 10px;
+    font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+    display: flex; gap: 10px; align-items: flex-start;
+    border: 1px solid var(--border);
+  }
+  .dd-checklist li::before {
+    content: ''; width: 18px; height: 18px; flex-shrink: 0;
+    border: 2px solid var(--text-muted); border-radius: 4px; margin-top: 1px;
+  }
+
+  .dd-callout {
+    padding: 20px 24px; border-radius: 12px; margin-bottom: 16px;
+    border: 1px solid;
+  }
+  .dd-callout.purple { background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.3); }
+  .dd-callout.blue { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.3); }
+  .dd-callout.amber { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); }
+  .dd-callout-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .dd-callout-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  .dd-cols { display: flex; gap: 20px; }
+  .dd-cols > div { flex: 1; }
+  @media (max-width: 900px) { .dd-cols { flex-direction: column; } }
+
+  .dd-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; margin: 2px;
+  }
+
+  /* ── Floating controls ── */
+  .stats-bar {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 2px; z-index: 50;
+    background: rgba(17,24,39,0.9); backdrop-filter: blur(20px);
+    border-radius: 16px; padding: 4px; border: 1px solid var(--border);
+  }
+  .stat-chip {
+    padding: 8px 16px; border-radius: 12px; font-size: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .stat-number { font-weight: 700; font-size: 16px; }
+  .stat-label { color: var(--text-muted); }
+
+  .back-btn {
+    position: fixed; top: 100px; left: 24px; z-index: 50;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 16px;
+    color: var(--text-secondary); font-size: 13px;
+    cursor: pointer; display: none; align-items: center; gap: 6px;
+    font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.2s;
+  }
+  .back-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+  .back-btn.visible { display: flex; }
+
+  .legend {
+    position: fixed; top: 100px; right: 24px; z-index: 50;
+    background: rgba(17,24,39,0.9); backdrop-filter: blur(10px);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 18px; font-size: 11px;
+  }
+  .legend-title { font-weight: 700; margin-bottom: 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-label { color: var(--text-secondary); }
+
+  .tooltip {
+    position: fixed; z-index: 200;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    pointer-events: none; opacity: 0; transition: opacity 0.2s;
+    max-width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .tooltip.visible { opacity: 1; }
+  .tooltip-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .tooltip-desc { color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+
+  @keyframes nodeEnter {
+    from { opacity: 0; transform: scale(0.3); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 0.4; } 50% { opacity: 0.8; }
+  }
+  .pulse-ring { animation: pulse 2s ease-in-out infinite; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">The Rug <span>Spa</span> | Marketing Command Center</div>
+    <div class="header-badge">SCARBOROUGH BRANCH</div>
+  </div>
+</div>
+
+<div class="breadcrumb" id="breadcrumb"></div>
+<button class="back-btn" id="backBtn" onclick="navigateBack()">&#8592; Back</button>
+
+<div class="canvas" id="canvasView">
+  <div class="graph-area" id="graphArea">
+    <svg class="graph-svg" id="graphSvg"></svg>
+  </div>
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+      <div>
+        <div class="detail-title" id="detailTitle"></div>
+        <div class="detail-category" id="detailCategory"></div>
+      </div>
+      <button class="detail-close" onclick="closePanel()">&#10005;</button>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<div class="deep-dive" id="deepDive"></div>
+
+<div class="legend" id="legend"></div>
+<div class="stats-bar" id="statsBar"></div>
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-title" id="tooltipTitle"></div>
+  <div class="tooltip-desc" id="tooltipDesc"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// COLORS
+// ══════════════════════════════════════════════════════════
+const C = {
+  root:'#3b82f6', content:'#8b5cf6', social:'#f43f5e', paid:'#f59e0b',
+  email:'#14b8a6', local:'#10b981', seo:'#6366f1', funnels:'#06b6d4',
+  brand:'#f97316', analytics:'#ec4899'
+};
+
+// ══════════════════════════════════════════════════════════
+// DATA - Full taxonomy with deep dives
+// ══════════════════════════════════════════════════════════
+const marketingData = {
+  id:'root', name:'Marketing', subtitle:'The Rug Spa \u2013 Scarborough', color:C.root,
+  description:'Complete marketing ecosystem for The Rug Spa Scarborough. Click any node to drill down.',
+  children: [
+    // ─── CONTENT ───
+    { id:'content', name:'Content Marketing', subtitle:'8 strategies', color:C.content, priority:'high',
+      description:'Content showcases expertise, builds trust, drives organic traffic. Before/after transformations are your most powerful asset.',
+      claudeTools:['Blog generation','Video scripts','Content calendars','SEO descriptions'],
+      children:[
+        { id:'content_blog', name:'Blog & SEO Articles', subtitle:'Organic traffic', color:C.content, priority:'high', impact:85, deepDive:'content_blog' },
+        { id:'content_video', name:'Video Content', subtitle:'Highest engagement', color:C.content, priority:'high', impact:95, deepDive:'content_video' },
+        { id:'content_photo', name:'Photography', subtitle:'Before/after portfolio', color:C.content, priority:'high', impact:80, deepDive:'content_photo' },
+        { id:'content_copy', name:'Copywriting', subtitle:'Conversion text', color:C.content, priority:'medium', impact:75, deepDive:'content_copy' },
+        { id:'content_ugc', name:'User-Generated Content', subtitle:'Customer-powered', color:C.content, priority:'medium', impact:70, deepDive:'content_ugc' }
+      ]
+    },
+    // ─── SOCIAL ───
+    { id:'social', name:'Social Media', subtitle:'6 platforms', color:C.social, priority:'high',
+      description:'Rug cleaning content goes viral. ~41 Instagram followers currently means massive growth opportunity.',
+      claudeTools:['Content scheduling','Caption generation','Hashtag research','Analytics'],
+      children:[
+        { id:'social_tiktok', name:'TikTok', subtitle:'Viral growth engine', color:C.social, priority:'high', impact:95, deepDive:'social_tiktok' },
+        { id:'social_instagram', name:'Instagram', subtitle:'Visual portfolio', color:C.social, priority:'high', impact:85, deepDive:'social_instagram' },
+        { id:'social_facebook', name:'Facebook', subtitle:'Local community', color:C.social, priority:'high', impact:80, deepDive:'social_facebook' },
+        { id:'social_youtube', name:'YouTube', subtitle:'Long-form & Shorts', color:C.social, priority:'medium', impact:70, deepDive:'social_youtube' },
+        { id:'social_gbp', name:'Google Business', subtitle:'Local search #1', color:C.social, priority:'high', impact:90, deepDive:'social_gbp' },
+        { id:'social_nextdoor', name:'Nextdoor & Local', subtitle:'Neighbourhood', color:C.social, priority:'medium', impact:65, deepDive:'social_nextdoor' }
+      ]
+    },
+    // ─── PAID ADS ───  (DEEP-EXPANDED)
+    { id:'paid', name:'Paid Advertising', subtitle:'5 channels', color:C.paid, priority:'high',
+      description:'Paid ads drive immediate, measurable results. Fastest way to fill the pipeline while organic builds.',
+      claudeTools:['Ad copy generation','Keyword research','Campaign structure','Budget optimization'],
+      children:[
+        { id:'paid_google_search', name:'Google Search Ads', subtitle:'High-intent capture', color:C.paid, priority:'high', impact:95,
+          children:[
+            { id:'gsa_research', name:'Research & Strategy', subtitle:'Foundation', color:C.paid, priority:'high', impact:90, deepDive:'gsa_research' },
+            { id:'gsa_account', name:'Account Structure', subtitle:'Campaigns & Ad Groups', color:C.paid, priority:'high', impact:85, deepDive:'gsa_account' },
+            { id:'gsa_keywords', name:'Keyword Strategy', subtitle:'Match types & negatives', color:C.paid, priority:'high', impact:95, deepDive:'gsa_keywords' },
+            { id:'gsa_adcopy', name:'Ad Copy & RSAs', subtitle:'Headlines & descriptions', color:C.paid, priority:'high', impact:90, deepDive:'gsa_adcopy' },
+            { id:'gsa_landing', name:'Landing Pages', subtitle:'Message match & CRO', color:C.paid, priority:'high', impact:85, deepDive:'gsa_landing' },
+            { id:'gsa_bidding', name:'Bidding & Budget', subtitle:'Strategy & allocation', color:C.paid, priority:'high', impact:80, deepDive:'gsa_bidding' },
+            { id:'gsa_tracking', name:'Tracking & Attribution', subtitle:'Measure everything', color:C.paid, priority:'high', impact:90, deepDive:'gsa_tracking' },
+            { id:'gsa_optimization', name:'Optimization', subtitle:'Quality Score & SQR', color:C.paid, priority:'high', impact:85, deepDive:'gsa_optimization' },
+            { id:'gsa_advanced', name:'Advanced Tactics', subtitle:'RLSA, DSA, PMax', color:C.paid, priority:'medium', impact:70, deepDive:'gsa_advanced' }
+          ]
+        },
+        { id:'paid_google_lsa', name:'Local Services Ads', subtitle:'Google Guaranteed', color:C.paid, priority:'high', impact:90, deepDive:'paid_google_lsa' },
+        { id:'paid_meta', name:'Meta Ads', subtitle:'FB/IG awareness', color:C.paid, priority:'high', impact:85, deepDive:'paid_meta' },
+        { id:'paid_tiktok', name:'TikTok Ads', subtitle:'Low-cost video', color:C.paid, priority:'medium', impact:70, deepDive:'paid_tiktok' },
+        { id:'paid_retargeting', name:'Retargeting', subtitle:'Convert warm leads', color:C.paid, priority:'high', impact:80, deepDive:'paid_retargeting' }
+      ]
+    },
+    // ─── EMAIL ───
+    { id:'email', name:'Email Marketing', subtitle:'6 sequences', color:C.email, priority:'high',
+      description:'Highest ROI channel ($36 per $1 spent). Nurtures leads, retains customers, drives repeat business.',
+      claudeTools:['Sequence writing','Subject line testing','Personalization','Automation design'],
+      children:[
+        { id:'email_welcome', name:'Welcome Sequence', subtitle:'First impression', color:C.email, priority:'high', impact:85, deepDive:'email_welcome' },
+        { id:'email_followup', name:'Quote Follow-up', subtitle:'Convert inquiries', color:C.email, priority:'high', impact:90, deepDive:'email_followup' },
+        { id:'email_retention', name:'Customer Retention', subtitle:'Repeat business', color:C.email, priority:'medium', impact:80, deepDive:'email_retention' },
+        { id:'email_newsletter', name:'Newsletter', subtitle:'Monthly value', color:C.email, priority:'low', impact:55, deepDive:'email_newsletter' },
+        { id:'email_review', name:'Review Requests', subtitle:'Reputation builder', color:C.email, priority:'high', impact:85, deepDive:'email_review' }
+      ]
+    },
+    // ─── LOCAL ───
+    { id:'local', name:'Local & Offline', subtitle:'7 tactics', color:C.local, priority:'high',
+      description:'For a local service business, offline marketing builds trust digital alone cannot.',
+      claudeTools:['Flyer copy','Partnership outreach','Referral programs','Event planning'],
+      children:[
+        { id:'local_flyers', name:'Flyers & Door Hangers', subtitle:'Neighbourhood saturation', color:C.local, priority:'high', impact:75, deepDive:'local_flyers' },
+        { id:'local_partnerships', name:'Local Partnerships', subtitle:'Cross-referral', color:C.local, priority:'high', impact:85, deepDive:'local_partnerships' },
+        { id:'local_referral', name:'Referral Program', subtitle:'Word-of-mouth', color:C.local, priority:'high', impact:80, deepDive:'local_referral' },
+        { id:'local_events', name:'Community Events', subtitle:'Brand presence', color:C.local, priority:'medium', impact:65, deepDive:'local_events' },
+        { id:'local_vehicle', name:'Vehicle Branding', subtitle:'Mobile billboard', color:C.local, priority:'medium', impact:60, deepDive:'local_vehicle' },
+        { id:'local_directmail', name:'Direct Mail', subtitle:'Targeted mailers', color:C.local, priority:'low', impact:55, deepDive:'local_directmail' }
+      ]
+    },
+    // ─── SEO ───
+    { id:'seo', name:'SEO & Web Presence', subtitle:'6 focus areas', color:C.seo, priority:'high',
+      description:'Local SEO determines if people find The Rug Spa. Google Maps ranking is critical.',
+      claudeTools:['Technical audits','Keyword research','Schema markup','Directory management'],
+      children:[
+        { id:'seo_local', name:'Local SEO', subtitle:'Google Maps dominance', color:C.seo, priority:'high', impact:95, deepDive:'seo_local' },
+        { id:'seo_website', name:'Website Optimization', subtitle:'Speed, UX, CRO', color:C.seo, priority:'high', impact:85, deepDive:'seo_website' },
+        { id:'seo_keywords', name:'Keyword Strategy', subtitle:'Search intent mapping', color:C.seo, priority:'medium', impact:75, deepDive:'seo_keywords' },
+        { id:'seo_directories', name:'Directory Listings', subtitle:'Citation building', color:C.seo, priority:'medium', impact:70, deepDive:'seo_directories' },
+        { id:'seo_reviews', name:'Review Management', subtitle:'Reputation = revenue', color:C.seo, priority:'high', impact:90, deepDive:'seo_reviews' }
+      ]
+    },
+    // ─── FUNNELS ───
+    { id:'funnels', name:'Funnels & Automation', subtitle:'5 systems', color:C.funnels, priority:'high',
+      description:'Automation turns one-time efforts into repeatable systems. No lead falls through the cracks.',
+      claudeTools:['Funnel design','CRM setup','Chatbot scripting','SMS automation'],
+      children:[
+        { id:'funnels_lead', name:'Lead Capture', subtitle:'Website to contact', color:C.funnels, priority:'high', impact:90, deepDive:'funnels_lead' },
+        { id:'funnels_booking', name:'Booking Flow', subtitle:'Frictionless conversion', color:C.funnels, priority:'high', impact:85, deepDive:'funnels_booking' },
+        { id:'funnels_crm', name:'CRM & Lead Mgmt', subtitle:'Never lose a lead', color:C.funnels, priority:'high', impact:80, deepDive:'funnels_crm' },
+        { id:'funnels_sms', name:'SMS Marketing', subtitle:'98% open rate', color:C.funnels, priority:'medium', impact:75, deepDive:'funnels_sms' },
+        { id:'funnels_chatbot', name:'Website Chatbot', subtitle:'24/7 qualification', color:C.funnels, priority:'medium', impact:65, deepDive:'funnels_chatbot' }
+      ]
+    },
+    // ─── BRAND ───
+    { id:'brand', name:'Brand & Creative', subtitle:'5 elements', color:C.brand, priority:'medium',
+      description:'The "Spa" positioning elevates rug cleaning from commodity to premium experience.',
+      claudeTools:['Brand voice docs','Messaging frameworks','Competitive positioning','Creative briefs'],
+      children:[
+        { id:'brand_voice', name:'Brand Voice', subtitle:'How you sound', color:C.brand, priority:'high', impact:80, deepDive:'brand_voice' },
+        { id:'brand_identity', name:'Visual Identity', subtitle:'Look & feel', color:C.brand, priority:'medium', impact:65, deepDive:'brand_identity' },
+        { id:'brand_testimonials', name:'Testimonials', subtitle:'Trust through stories', color:C.brand, priority:'high', impact:85, deepDive:'brand_testimonials' },
+        { id:'brand_beforeafter', name:'Before/After', subtitle:'Proof in the transform', color:C.brand, priority:'high', impact:90, deepDive:'brand_beforeafter' }
+      ]
+    },
+    // ─── ANALYTICS ───
+    { id:'analytics', name:'Analytics', subtitle:'4 systems', color:C.analytics, priority:'medium',
+      description:'You can\'t improve what you don\'t measure. Claude Code automates reporting.',
+      claudeTools:['Automated reports','Competitor monitoring','A/B test analysis','Budget optimization'],
+      children:[
+        { id:'analytics_tracking', name:'Performance Tracking', subtitle:'Know your numbers', color:C.analytics, priority:'high', impact:85, deepDive:'analytics_tracking' },
+        { id:'analytics_competitor', name:'Competitor Intel', subtitle:'Know the landscape', color:C.analytics, priority:'medium', impact:65, deepDive:'analytics_competitor' },
+        { id:'analytics_abtesting', name:'A/B Testing', subtitle:'Data-driven optimization', color:C.analytics, priority:'medium', impact:70, deepDive:'analytics_abtesting' },
+        { id:'analytics_roi', name:'ROI & Budget', subtitle:'Spend smart', color:C.analytics, priority:'high', impact:80, deepDive:'analytics_roi' }
+      ]
+    }
+  ]
+};
+
+// ══════════════════════════════════════════════════════════
+// DEEP DIVE PAGE CONTENT GENERATOR
+// ══════════════════════════════════════════════════════════
+const deepDiveContent = {
+
+// ──────────────────────────────────────────────
+// GOOGLE SEARCH ADS - RESEARCH & STRATEGY
+// ──────────────────────────────────────────────
+gsa_research: (node) => `
+<div class="dd-hero" style="border-left: 4px solid ${C.paid}">
+  <div class="dd-hero::before" style="background:${C.paid}"></div>
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">Research & Strategy</div>
+  <div class="dd-hero-sub">The foundation of a profitable Google Ads campaign. Before spending a single dollar, you need to deeply understand the search landscape, your competitors, and your ideal customer's search behaviour in Scarborough.</div>
+  <div class="dd-hero-tags">
+    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+    <span class="dd-tag" style="background:rgba(245,158,11,0.15);color:${C.paid}">Impact: 90/100</span>
+    <span class="dd-tag" style="background:rgba(139,92,246,0.15);color:${C.paid}">Do this FIRST</span>
+  </div>
+</div>
+<div class="dd-content">
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">End-to-End Process</div>
+    <div class="dd-section-text">Here's exactly how to go from zero to a research-backed Google Ads strategy, step by step.</div>
+
+    <div class="dd-step" style="animation-delay:0.1s">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">1</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Market & Demand Research</div>
+        <div class="dd-step-desc">Use Google Keyword Planner (free with a Google Ads account) to understand search volume in the Scarborough/GTA area. Look up core terms: "rug cleaning scarborough", "rug cleaning near me", "carpet cleaning scarborough", "persian rug cleaning toronto". Check monthly volumes, competition level, and suggested bid ranges. This tells you how many people are actively searching and what it costs to reach them.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">2</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Competitor Ad Research</div>
+        <div class="dd-step-desc">Search your target keywords on Google and study the ads that appear. Screenshot every competitor ad. Note their headlines, descriptions, offers, and extensions. Use the Google Ads Transparency Center to see any advertiser's complete ad history. Identify: Who's spending the most? What offers are they running? What do their landing pages look like? Where are the gaps you can exploit?</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">3</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Customer Intent Mapping</div>
+        <div class="dd-step-desc">Map every keyword to one of four intent levels: <strong>Emergency</strong> ("rug cleaning urgently", "water damage rug"), <strong>Ready to Buy</strong> ("rug cleaning scarborough", "rug cleaning pickup"), <strong>Comparing</strong> ("best rug cleaner scarborough", "rug cleaning cost"), <strong>Researching</strong> ("how to clean a persian rug"). Prioritize spending on Ready-to-Buy and Emergency searchers first -- these convert at 10-20x the rate of researchers.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">4</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Unique Selling Proposition (USP) Analysis</div>
+        <div class="dd-step-desc">Define what makes The Rug Spa's ad copy different from competitors. Your USPs: <strong>$49.99 any rug any size</strong> (unbeatable entry price), <strong>Free pickup & delivery</strong> (zero friction), <strong>100+ years expertise</strong> (trust), <strong>"Spa" experience</strong> (premium positioning), <strong>20,000 sq ft facility</strong> (capacity/professionalism). Each ad group should lead with the USP that matches that searcher's intent.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">5</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Budget & Goal Setting</div>
+        <div class="dd-step-desc">Based on keyword costs and conversion assumptions: If average CPC is $4-8, and conversion rate is 5-10%, your cost per lead will be roughly $40-160. Set a test budget ($500-1000/month for the first month) and define goals: number of quote requests, phone calls, and bookings. Back into revenue: if average job is $100 and you close 30% of leads, you need ~14 leads for $420 in revenue on a $560 ad spend. Adjust as you learn.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Claude Code Workflows</div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Keyword Universe Builder</div>
+      <div class="dd-callout-text">Feed Claude Code your seed keywords and have it generate a complete keyword universe: 200+ keyword variations organized by intent, match type recommendations, negative keyword lists, and estimated search volumes. Claude can analyze Google Keyword Planner exports and build campaign-ready keyword lists in minutes instead of hours.</div>
+    </div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Competitor Ad Analysis</div>
+      <div class="dd-callout-text">Use Claude Code with web search to pull competitor ads from the Google Ads Transparency Center, then analyze patterns: What headlines are most common? What offers? What CTAs? Generate a competitive intelligence brief with recommendations for how The Rug Spa's ads should differentiate.</div>
+    </div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Budget Scenario Modeler</div>
+      <div class="dd-callout-text">Build a budget scenario model: input CPC ranges, expected conversion rates, and average order value. Claude generates best/expected/worst case projections for different budget levels. Output includes daily budget, expected leads, cost per acquisition, and projected ROAS. Update monthly with actual data.</div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Rug Spa Keyword Starter Set</div>
+    <table class="dd-table">
+      <tr><th>Category</th><th>Keywords</th><th>Intent</th><th>Priority</th></tr>
+      <tr><td>Core Service + Location</td><td>rug cleaning scarborough, carpet cleaning scarborough, area rug cleaning scarborough ON</td><td>Ready to Buy</td><td><span class="priority-tag priority-high">HIGH</span></td></tr>
+      <tr><td>Near Me</td><td>rug cleaning near me, rug cleaner near me, carpet cleaning near me</td><td>Ready to Buy</td><td><span class="priority-tag priority-high">HIGH</span></td></tr>
+      <tr><td>Specialty</td><td>persian rug cleaning toronto, silk rug cleaning, oriental rug cleaner, handmade rug cleaning</td><td>Ready to Buy</td><td><span class="priority-tag priority-high">HIGH</span></td></tr>
+      <tr><td>Problem-Based</td><td>rug stain removal, pet stain rug cleaning, rug odor removal, water damaged rug</td><td>Emergency</td><td><span class="priority-tag priority-high">HIGH</span></td></tr>
+      <tr><td>Service Features</td><td>rug cleaning pickup delivery, free rug pickup cleaning, rug cleaning service at home</td><td>Ready to Buy</td><td><span class="priority-tag priority-medium">MED</span></td></tr>
+      <tr><td>Comparison</td><td>best rug cleaner scarborough, rug cleaning reviews toronto, affordable rug cleaning</td><td>Comparing</td><td><span class="priority-tag priority-medium">MED</span></td></tr>
+      <tr><td>Competitor</td><td>[competitor names] + rug cleaning</td><td>Comparing</td><td><span class="priority-tag priority-low">LOW</span></td></tr>
+    </table>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">What Success Looks Like</div>
+    <div class="dd-grid">
+      <div class="dd-card">
+        <div class="dd-card-title">Month 1: Learning</div>
+        <div class="dd-card-desc">Launch with broad keyword coverage, gather data on which terms convert. Expect higher CPA as the algorithm learns. Focus on click-through rate and quality score.</div>
+        <div class="dd-card-meta"><span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Budget: $500-1000</span><span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Target: 20+ leads</span></div>
+      </div>
+      <div class="dd-card">
+        <div class="dd-card-title">Month 2-3: Optimization</div>
+        <div class="dd-card-desc">Pause non-performing keywords, increase bids on winners. Refine ad copy based on CTR data. Add negative keywords aggressively. CPA should drop 30-50%.</div>
+        <div class="dd-card-meta"><span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">CPA target: under $80</span></div>
+      </div>
+      <div class="dd-card">
+        <div class="dd-card-title">Month 4-6: Scaling</div>
+        <div class="dd-card-desc">Scale budget on proven campaigns. Launch RLSA campaigns. Test Performance Max. Aim for 5:1 ROAS or better.</div>
+        <div class="dd-card-meta"><span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">ROAS target: 5:1+</span></div>
+      </div>
+      <div class="dd-card">
+        <div class="dd-card-title">Ongoing: Compound</div>
+        <div class="dd-card-desc">Quality scores improve over time, lowering CPCs. Historical conversion data enables smart bidding. Retargeting lists grow. Returns compound.</div>
+        <div class="dd-card-meta"><span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Self-improving system</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+`,
+
+// ──────────────────────────────────────────────
+// GOOGLE SEARCH ADS - ACCOUNT STRUCTURE
+// ──────────────────────────────────────────────
+gsa_account: (node) => `
+<div class="dd-hero" style="border-left: 4px solid ${C.paid}">
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">Account Structure</div>
+  <div class="dd-hero-sub">How you organize your Google Ads account determines your control, quality score, and optimization ability. A well-structured account is the difference between burning money and printing it.</div>
+  <div class="dd-hero-tags">
+    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Impact: 85/100</span>
+  </div>
+</div>
+<div class="dd-content">
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Recommended Account Structure for The Rug Spa</div>
+    <div class="dd-section-text">Each campaign targets a distinct business goal. Each ad group within a campaign targets a tight theme of keywords. This gives you granular control over budgets, bids, and ad copy.</div>
+
+    <div class="dd-callout blue">
+      <div class="dd-callout-title">Campaign 1: Core Services (Highest Budget)</div>
+      <div class="dd-callout-text">
+        <strong>Ad Groups:</strong><br>
+        &bull; Rug Cleaning + Location (rug cleaning scarborough, rug cleaner scarborough ON)<br>
+        &bull; Carpet Cleaning + Location (carpet cleaning scarborough)<br>
+        &bull; Near Me Searches (rug cleaning near me, carpet cleaner near me)<br>
+        &bull; Pickup & Delivery (rug cleaning pickup, free rug pickup service)<br><br>
+        <strong>Budget:</strong> 50% of total spend. These are your money keywords.
+      </div>
+    </div>
+    <div class="dd-callout blue">
+      <div class="dd-callout-title">Campaign 2: Specialty Services</div>
+      <div class="dd-callout-text">
+        <strong>Ad Groups:</strong><br>
+        &bull; Persian/Oriental Rugs (persian rug cleaning, oriental rug specialist)<br>
+        &bull; Silk & Delicate Rugs (silk rug cleaning, handmade rug care)<br>
+        &bull; Stain & Odor Removal (rug stain removal, pet odor rug cleaning)<br>
+        &bull; Other Services (sofa cleaning, mattress cleaning, air duct)<br><br>
+        <strong>Budget:</strong> 25% of total. Higher-value jobs, more specific intent.
+      </div>
+    </div>
+    <div class="dd-callout blue">
+      <div class="dd-callout-title">Campaign 3: Brand & Competitor</div>
+      <div class="dd-callout-text">
+        <strong>Ad Groups:</strong><br>
+        &bull; Brand Terms (the rug spa, rug spa scarborough)<br>
+        &bull; Competitor Terms (competitor names + rug cleaning)<br><br>
+        <strong>Budget:</strong> 10% of total. Brand protection and conquest.
+      </div>
+    </div>
+    <div class="dd-callout blue">
+      <div class="dd-callout-title">Campaign 4: Remarketing (RLSA)</div>
+      <div class="dd-callout-text">
+        <strong>Ad Groups:</strong><br>
+        &bull; Website Visitors (people who visited but didn't convert)<br>
+        &bull; Quote Page Abandoners (visited the quotation page)<br><br>
+        <strong>Budget:</strong> 15% of total. Highest conversion rate of all campaigns.
+      </div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Claude Code Workflow</div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Account Structure Generator</div>
+      <div class="dd-callout-text">Provide Claude Code with your services, locations, and target keywords. It outputs a complete account structure: campaigns, ad groups, keyword lists per ad group, match types, and negative keyword lists. Export as a Google Ads Editor-compatible CSV for instant upload. Also generates the ad copy and extensions for each ad group.</div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Key Principles</div>
+    <ul class="dd-checklist">
+      <li>One theme per ad group. "Rug cleaning scarborough" and "persian rug cleaning" should NOT be in the same ad group.</li>
+      <li>Ad copy must match the ad group theme. If someone searches "persian rug cleaning", the ad headline should say "Persian Rug Cleaning" -- not generic "Rug Cleaning".</li>
+      <li>Separate campaigns for different budget priorities. Your core services campaign should never compete with experimental campaigns for budget.</li>
+      <li>Use shared negative keyword lists across campaigns to prevent your own ad groups from competing against each other.</li>
+      <li>Start with fewer, tighter ad groups. It's easier to expand a working structure than to fix a messy one.</li>
+    </ul>
+  </div>
+</div>
+`,
+
+// ──────────────────────────────────────────────
+// GOOGLE SEARCH ADS - KEYWORD STRATEGY
+// ──────────────────────────────────────────────
+gsa_keywords: (node) => `
+<div class="dd-hero" style="border-left: 4px solid ${C.paid}">
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">Keyword Strategy</div>
+  <div class="dd-hero-sub">Keywords are the DNA of your Google Ads account. Choosing the right keywords with the right match types determines whether you reach buyers or burn budget on irrelevant clicks.</div>
+  <div class="dd-hero-tags">
+    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Impact: 95/100</span>
+    <span class="dd-tag" style="background:rgba(244,63,94,0.15);color:${C.paid}">Most Critical</span>
+  </div>
+</div>
+<div class="dd-content">
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Match Types Explained</div>
+    <table class="dd-table">
+      <tr><th>Match Type</th><th>Syntax</th><th>What It Does</th><th>When to Use</th></tr>
+      <tr><td>Broad Match</td><td>rug cleaning</td><td>Shows ads for related searches, synonyms, and variations Google thinks are relevant. Widest reach but least control.</td><td>Only with smart bidding after 30+ conversions. Never at launch.</td></tr>
+      <tr><td>Phrase Match</td><td>"rug cleaning"</td><td>Shows ads when the search includes the meaning of your keyword. E.g., "professional rug cleaning service near me" would trigger.</td><td>Best for launch. Balances reach and control. Start here.</td></tr>
+      <tr><td>Exact Match</td><td>[rug cleaning scarborough]</td><td>Shows ads only for searches that match the exact meaning. Most precise, lowest waste.</td><td>For your highest-value, most proven keywords. Add after you confirm which phrases convert.</td></tr>
+    </table>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Launch Strategy: The Rug Spa</div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">1</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Start with Phrase Match + Exact Match</div>
+        <div class="dd-step-desc">For each ad group, use both: <strong>"rug cleaning scarborough"</strong> (phrase) catches wider intent, <strong>[rug cleaning scarborough]</strong> (exact) lets you set higher bids for the perfect match. This gives you data on what people actually search while controlling costs.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">2</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Build Negative Keywords Before Launch</div>
+        <div class="dd-step-desc">Pre-build a negative keyword list to block irrelevant clicks from day one. For The Rug Spa: <strong>-DIY, -rental, -buy, -sale, -job, -jobs, -hiring, -carpet store, -rug store, -how to, -tutorial, -machine, -vacuum, -shampooer</strong>. Review Search Terms Report weekly for the first month and add new negatives daily.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">3</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Mine the Search Terms Report</div>
+        <div class="dd-step-desc">After 1-2 weeks, check Search Terms Report (shows exactly what people typed). You'll discover keywords you never thought of. Add high-converting search terms as exact match keywords. Add irrelevant ones as negatives. This is the single most important optimization activity.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Claude Code Workflows</div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Keyword Expansion Engine</div>
+      <div class="dd-callout-text">Give Claude your 10 seed keywords. It generates 200+ variations across all match types, organized by ad group, with intent labels and negative keyword suggestions. Output in Google Ads Editor CSV format for direct upload.</div>
+    </div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Weekly Search Term Analyzer</div>
+      <div class="dd-callout-text">Export your Search Terms Report as CSV. Claude Code analyzes it and produces: new keyword recommendations (with suggested match type and ad group), new negative keywords to add, wasted spend analysis (irrelevant clicks you're paying for), and trend insights (emerging search patterns).</div>
+    </div>
+  </div>
+</div>
+`,
+
+// ──────────────────────────────────────────────
+// GOOGLE SEARCH ADS - AD COPY & RSAs
+// ──────────────────────────────────────────────
+gsa_adcopy: (node) => `
+<div class="dd-hero" style="border-left: 4px solid ${C.paid}">
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">Ad Copy & Responsive Search Ads</div>
+  <div class="dd-hero-sub">Your ad copy is the first impression. It has 3 seconds to convince someone to click your ad instead of your competitor's. Google's Responsive Search Ads (RSAs) let you provide up to 15 headlines and 4 descriptions -- Google mixes and matches to find winners.</div>
+  <div class="dd-hero-tags">
+    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Impact: 90/100</span>
+  </div>
+</div>
+<div class="dd-content">
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">RSA Structure (per ad group)</div>
+    <div class="dd-section-text">Each ad group needs at least 1 RSA with 15 headlines and 4 descriptions. Pin your most important headlines to positions 1-2 so they always show.</div>
+
+    <div class="dd-callout amber">
+      <div class="dd-callout-title">Example RSA: "Rug Cleaning Scarborough" Ad Group</div>
+      <div class="dd-callout-text">
+        <strong>Headlines (30 chars each):</strong><br>
+        1. Rug Cleaning in Scarborough [PIN 1]<br>
+        2. $49.99 Any Rug, Any Size [PIN 2]<br>
+        3. Free Pickup & Delivery<br>
+        4. 100+ Years of Expertise<br>
+        5. The Rug Spa - We Clean, You Relax<br>
+        6. Professional Rug Cleaning<br>
+        7. Get Your Free Quote Today<br>
+        8. 20,000 Sq Ft Facility<br>
+        9. Hand & Machine Cleaning<br>
+        10. Trusted by 500+ Customers<br>
+        11. Same-Week Pickup Available<br>
+        12. Stain & Odor Removal<br>
+        13. Eco-Friendly Cleaning<br>
+        14. Book Online in 2 Minutes<br>
+        15. Open Mon-Sat, 8AM-7PM<br><br>
+        <strong>Descriptions (90 chars each):</strong><br>
+        1. Professional rug cleaning starting at $49.99. Free porch-side pickup across Scarborough. Book today!<br>
+        2. We treat every rug like a cherished heirloom. Deep clean with eco-friendly solutions. Get a free quote.<br>
+        3. From Persian to synthetic, our spa-level care revives your rug's beauty. 100+ years of expertise.<br>
+        4. Scarborough's trusted rug spa. Free pickup, expert cleaning, fast turnaround. Call or book online now.
+      </div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Ad Extensions (Assets) -- All Free, All Essential</div>
+    <table class="dd-table">
+      <tr><th>Extension</th><th>What to Add</th><th>Why</th></tr>
+      <tr><td>Sitelinks</td><td>"Get a Quote" | "Our Process" | "Services & Pricing" | "Reviews" | "Free Pickup"</td><td>More real estate in search results, more click options</td></tr>
+      <tr><td>Callout</td><td>"Free Pickup & Delivery" | "$49.99 Special" | "Same-Week Service" | "Eco-Friendly" | "Serving All of GTA"</td><td>Highlight USPs without using headline space</td></tr>
+      <tr><td>Structured Snippets</td><td>Services: Rug Cleaning, Carpet Cleaning, Stain Removal, Odor Treatment, Sofa Cleaning</td><td>Show service breadth</td></tr>
+      <tr><td>Call Extension</td><td>(437) 898-5551 (Scarborough number)</td><td>One-tap calling from mobile search</td></tr>
+      <tr><td>Location</td><td>Link Google Business Profile</td><td>Show address, distance, map pin</td></tr>
+      <tr><td>Price</td><td>Rug Cleaning from $49.99 | Carpet 3 Rooms $150 | Sofa from $129</td><td>Pre-qualify clicks by showing pricing</td></tr>
+      <tr><td>Image</td><td>Before/after rug transformation photo</td><td>Visual stands out in text-heavy results</td></tr>
+    </table>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Claude Code Workflow</div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> RSA Factory</div>
+      <div class="dd-callout-text">For each ad group, Claude generates 15 unique headlines and 4 descriptions following these rules: at least 3 headlines include the keyword, at least 2 include the offer, at least 2 include a USP, all descriptions have a CTA, nothing is duplicated. Output includes pin recommendations and the reasoning behind each variation. Can generate RSAs for all ad groups in one batch.</div>
+    </div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Ad Copy A/B Test Generator</div>
+      <div class="dd-callout-text">Every 2 weeks, Claude reviews ad performance data (CTR, conversion rate by headline combination) and generates new headline variations to replace underperformers. Tracks what's been tested to avoid repeating. Builds a knowledge base of what messaging resonates with Scarborough searchers.</div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Copy Writing Rules for Rug Spa Ads</div>
+    <ul class="dd-checklist">
+      <li><strong>Include the keyword in Headline 1.</strong> If someone searches "persian rug cleaning", they should see "Persian Rug Cleaning" in the first headline. This boosts Quality Score and click-through rate.</li>
+      <li><strong>Lead with the offer in Headline 2.</strong> "$49.99 Any Rug, Any Size" or "Free Pickup & Delivery" -- give them a reason to keep reading.</li>
+      <li><strong>Every description needs a CTA.</strong> "Get a Free Quote", "Book Online Now", "Call Today" -- tell them exactly what to do next.</li>
+      <li><strong>Use numbers.</strong> "$49.99" beats "affordable". "100+ years" beats "experienced". "20,000 sq ft" beats "large facility". Numbers stop the scroll.</li>
+      <li><strong>Match the ad to the landing page.</strong> If your ad says "$49.99", the landing page must say "$49.99" above the fold. Mismatch = bounce.</li>
+    </ul>
+  </div>
+</div>
+`,
+
+// ──────────────────────────────────────────────
+// GOOGLE SEARCH ADS - LANDING PAGES
+// ──────────────────────────────────────────────
+gsa_landing: (node) => `
+<div class="dd-hero" style="border-left: 4px solid ${C.paid}">
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">Landing Pages</div>
+  <div class="dd-hero-sub">The landing page is where ad clicks turn into leads. A great ad with a bad landing page is like paying for a taxi to a locked door. Every ad group ideally has its own landing page that matches the searcher's exact intent.</div>
+  <div class="dd-hero-tags">
+    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Impact: 85/100</span>
+  </div>
+</div>
+<div class="dd-content">
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Landing Page Formula for The Rug Spa</div>
+    <div class="dd-section-text">Each landing page follows this proven structure. Above the fold (what you see without scrolling) does 80% of the work.</div>
+
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">1</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Above the Fold: Headline + Offer + CTA</div>
+        <div class="dd-step-desc"><strong>Headline</strong> matches the ad (e.g., "Professional Rug Cleaning in Scarborough"). <strong>Subheadline</strong> states the offer ("Any Rug, Any Size - $49.99 | Free Pickup & Delivery"). <strong>CTA button</strong> is prominent ("Get Your Free Quote" or "Book Free Pickup"). <strong>Hero image</strong>: A dramatic before/after rug transformation. <strong>Trust badges</strong>: Google Guaranteed, 4.8 stars, 500+ rugs cleaned.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">2</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Section 2: The 3-Step Process</div>
+        <div class="dd-step-desc">Visual walkthrough: 1) We pick up your rug (free) → 2) Expert spa-level cleaning → 3) We deliver it back, like new. This reduces anxiety by showing exactly what happens. Include the specific details: "climate-regulated drying chamber", "eco-friendly solutions", "industrial equipment". Use icons or photos for each step.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">3</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Section 3: Social Proof</div>
+        <div class="dd-step-desc">3-5 customer reviews with names and stars. A before/after photo gallery (4-6 transformations). Statistics: "500+ rugs cleaned", "4.8/5 average rating", "100+ years expertise". Video testimonial if available.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">4</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Section 4: Services & Pricing</div>
+        <div class="dd-step-desc">Clear pricing table. Rug types handled (Persian, silk, wool, synthetic). Additional services (carpet, sofa, tile). The $49.99 promo prominently displayed.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">5</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Section 5: FAQ + Final CTA</div>
+        <div class="dd-step-desc">Address top objections: "How long does it take?" (5-7 business days), "Is it safe for my antique rug?" (yes, expert assessment), "What if I'm not satisfied?" (satisfaction guarantee). End with a strong CTA block repeating the offer and making it easy to convert: form, phone number, or chat.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Pages to Build</div>
+    <table class="dd-table">
+      <tr><th>Landing Page</th><th>Matching Ad Groups</th><th>Key Difference</th></tr>
+      <tr><td>General Rug Cleaning</td><td>Core rug cleaning + near me keywords</td><td>Broadest appeal, leads with $49.99 and free pickup</td></tr>
+      <tr><td>Persian & Oriental Specialty</td><td>Persian, oriental, silk keywords</td><td>Emphasizes expertise with delicate rugs, heritage, hand-cleaning</td></tr>
+      <tr><td>Stain & Odor Emergency</td><td>Stain removal, pet, water damage keywords</td><td>Urgency-focused, fast turnaround, problem-solution</td></tr>
+      <tr><td>Carpet Cleaning</td><td>Carpet cleaning keywords</td><td>Focuses on carpet-specific services and room pricing</td></tr>
+    </table>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Claude Code Workflows</div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Landing Page Builder</div>
+      <div class="dd-callout-text">Claude generates complete landing page copy for each ad group: headline, subheadline, body sections, CTAs, FAQ content, meta tags, and schema markup. If using Wix, generates the content in a format ready to paste. If building custom (Next.js / therugsspa.store), Claude can write the actual page components.</div>
+    </div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> CRO Analysis</div>
+      <div class="dd-callout-text">Monthly: Claude analyzes landing page performance (bounce rate, time on page, conversion rate) and generates optimization hypotheses. "Conversion rate dropped 12% -- hypothesis: the form has too many fields. Test: reduce from 6 fields to 3. Expected impact: +20% conversion rate."</div>
+    </div>
+  </div>
+</div>
+`,
+
+// ──────────────────────────────────────────────
+// GOOGLE SEARCH ADS - BIDDING & BUDGET
+// ──────────────────────────────────────────────
+gsa_bidding: (node) => `
+<div class="dd-hero" style="border-left: 4px solid ${C.paid}">
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">Bidding & Budget</div>
+  <div class="dd-hero-sub">Your bid strategy determines how much you pay per click and when your ads show. The right strategy changes as your account matures. Start manual, graduate to smart bidding.</div>
+  <div class="dd-hero-tags">
+    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Impact: 80/100</span>
+  </div>
+</div>
+<div class="dd-content">
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Bid Strategy Progression</div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">1</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">Week 1-4: Manual CPC or Maximize Clicks (with cap)</div>
+        <div class="dd-step-desc">Start with Manual CPC so you control exactly what you pay per keyword. Set bids based on Keyword Planner estimates. Alternative: "Maximize Clicks" with a max CPC cap of $6-8 to gather data faster. The goal is collecting conversion data.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">2</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">After 15-30 Conversions: Maximize Conversions</div>
+        <div class="dd-step-desc">Once Google has enough conversion data, switch to "Maximize Conversions" which uses machine learning to get you the most leads within your budget. This typically reduces CPA by 20-40% compared to manual bidding.</div>
+      </div>
+    </div>
+    <div class="dd-step">
+      <div class="dd-step-num" style="background:${C.paid}20;color:${C.paid}">3</div>
+      <div class="dd-step-content">
+        <div class="dd-step-title">After 50+ Conversions: Target CPA</div>
+        <div class="dd-step-desc">Set a target cost-per-acquisition and let Google optimize to hit it. If your average CPA has been $60, set target to $55 and let the algorithm find efficiencies. Only works with sufficient conversion history.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Budget Allocation for The Rug Spa</div>
+    <table class="dd-table">
+      <tr><th>Campaign</th><th>% of Budget</th><th>Monthly ($1000 total)</th><th>Rationale</th></tr>
+      <tr><td>Core Services</td><td>50%</td><td>$500</td><td>Highest volume, highest intent</td></tr>
+      <tr><td>Specialty Services</td><td>25%</td><td>$250</td><td>Higher value per job</td></tr>
+      <tr><td>Remarketing</td><td>15%</td><td>$150</td><td>Highest conversion rate</td></tr>
+      <tr><td>Brand + Competitor</td><td>10%</td><td>$100</td><td>Protection and conquest</td></tr>
+    </table>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Geo-Targeting & Scheduling</div>
+    <div class="dd-grid">
+      <div class="dd-card">
+        <div class="dd-card-title">Location Targeting</div>
+        <div class="dd-card-desc">
+          <strong>Primary:</strong> Scarborough (15km radius from 21 Progress Ave)<br>
+          <strong>Secondary:</strong> East Toronto, Pickering, Markham, Ajax<br>
+          <strong>Bid adjustments:</strong> +20% for Scarborough core, +10% for adjacent, -20% for outer ring<br>
+          <strong>Setting:</strong> "People IN or regularly in" your target area (not "interested in")
+        </div>
+      </div>
+      <div class="dd-card">
+        <div class="dd-card-title">Ad Scheduling</div>
+        <div class="dd-card-desc">
+          <strong>Peak hours:</strong> Mon-Sat 7am-9pm (when people are searching and you can answer calls)<br>
+          <strong>Bid adjustments:</strong> +15% for 8am-12pm (highest conversion window), -30% for 10pm-6am<br>
+          <strong>Sunday:</strong> Run at reduced bid (people browse but conversion is lower)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`,
+
+// ──────────────────────────────────────────────
+// GOOGLE SEARCH ADS - TRACKING
+// ──────────────────────────────────────────────
+gsa_tracking: (node) => `
+<div class="dd-hero" style="border-left: 4px solid ${C.paid}">
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">Tracking & Attribution</div>
+  <div class="dd-hero-sub">Without proper tracking, you're spending money blind. You need to track every form submission, phone call, and chat message back to the exact keyword and ad that generated it. This is non-negotiable before spending on ads.</div>
+  <div class="dd-hero-tags">
+    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Impact: 90/100</span>
+    <span class="dd-tag" style="background:rgba(244,63,94,0.15);color:var(--accent-rose)">Do BEFORE launching ads</span>
+  </div>
+</div>
+<div class="dd-content">
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Tracking Setup Checklist</div>
+    <ul class="dd-checklist">
+      <li><strong>Google Ads Conversion Tracking:</strong> Install the Google Ads tag on therugsspa.com. Set up conversion actions for: Quote form submission, Click-to-call, Chat initiation. This is the minimum viable tracking.</li>
+      <li><strong>Google Analytics 4:</strong> Install GA4 and link it to Google Ads. Set up events for: page_view (quote page), form_submit, click (phone number), scroll_depth. Import GA4 conversions into Google Ads for richer optimization signals.</li>
+      <li><strong>Google Tag Manager:</strong> Use GTM to manage all tags centrally. Easier to add/modify tracking without changing website code. Set up triggers for form submissions, button clicks, scroll tracking.</li>
+      <li><strong>Call Tracking:</strong> Use Google's forwarding number (free) or CallRail ($45/month) for detailed call tracking. Track: which keyword/ad generated the call, call duration, call recording (for quality), call outcome. Without this, phone calls are a blind spot.</li>
+      <li><strong>UTM Parameters:</strong> Tag every ad URL with UTM parameters so you can see Google Ads traffic in Google Analytics. Format: ?utm_source=google&utm_medium=cpc&utm_campaign={campaign}&utm_content={adgroup}&utm_term={keyword}</li>
+      <li><strong>Offline Conversion Import:</strong> When a lead becomes a paying customer, import that conversion back into Google Ads. This lets the algorithm optimize for actual revenue, not just leads. Requires CRM integration.</li>
+    </ul>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Claude Code Workflows</div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> GTM Container Builder</div>
+      <div class="dd-callout-text">Claude generates a complete Google Tag Manager container JSON with all necessary tags, triggers, and variables pre-configured for The Rug Spa. Import directly into GTM. Includes: Google Ads conversion tags, GA4 config, phone click tracking, form submission tracking, scroll depth tracking.</div>
+    </div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Weekly Performance Report</div>
+      <div class="dd-callout-text">Export Google Ads data as CSV. Claude generates a plain-English performance report: "This week you spent $247 and got 8 leads (CPA $30.88, down 12% from last week). Top performer: 'persian rug cleaning' drove 3 leads at $18 each. Recommendation: increase budget on specialty campaign by $50/week."</div>
+    </div>
+  </div>
+</div>
+`,
+
+// ──────────────────────────────────────────────
+// GOOGLE SEARCH ADS - OPTIMIZATION
+// ──────────────────────────────────────────────
+gsa_optimization: (node) => `
+<div class="dd-hero" style="border-left: 4px solid ${C.paid}">
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">Optimization</div>
+  <div class="dd-hero-sub">A Google Ads account is a living system that improves over time with consistent optimization. The difference between a mediocre and excellent account is what you do after launch. These are your weekly rituals.</div>
+  <div class="dd-hero-tags">
+    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Impact: 85/100</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Ongoing weekly work</span>
+  </div>
+</div>
+<div class="dd-content">
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Weekly Optimization Checklist</div>
+    <ul class="dd-checklist">
+      <li><strong>Search Terms Report (15 min):</strong> Review what people actually searched. Add good terms as keywords. Add bad terms as negatives. This single activity prevents more wasted spend than anything else.</li>
+      <li><strong>Quality Score Review (10 min):</strong> Check Quality Score for top keywords. QS below 6 = action needed. Improve by: tightening ad-to-keyword relevance, improving landing page experience, boosting expected CTR with better ad copy.</li>
+      <li><strong>Ad Performance (10 min):</strong> Check RSA asset performance (headlines and descriptions rated "Best", "Good", "Low"). Replace "Low" performers with new variations. Keep "Best" performers.</li>
+      <li><strong>Bid Adjustments (5 min):</strong> Review performance by device (mobile vs desktop), time of day, location. Increase bids where conversion rate is above average, decrease where it's below.</li>
+      <li><strong>Budget Pacing (5 min):</strong> Are campaigns spending their full budget? If underspending: broaden keywords or increase bids. If overspending: tighten targeting or add negatives.</li>
+    </ul>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Quality Score Deep Dive</div>
+    <div class="dd-section-text">Quality Score (1-10) directly impacts your CPC and ad position. A QS of 10 can mean paying 50% less than a competitor with QS 5 for the same position.</div>
+    <table class="dd-table">
+      <tr><th>Component</th><th>Weight</th><th>How to Improve for Rug Spa</th></tr>
+      <tr><td>Expected CTR</td><td>~39%</td><td>Better ad copy, use keyword in headline, strong offer, ad extensions</td></tr>
+      <tr><td>Ad Relevance</td><td>~22%</td><td>Tight ad groups (one theme each), keyword in headlines, matching intent</td></tr>
+      <tr><td>Landing Page Experience</td><td>~39%</td><td>Fast load time, mobile-friendly, keyword on page, clear CTA, relevant content</td></tr>
+    </table>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Claude Code Workflows</div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Automated Optimization Report</div>
+      <div class="dd-callout-text">Weekly: Export account data. Claude produces an optimization report with specific actions ranked by impact. "1) Add 12 negative keywords (saves ~$34/week). 2) Pause keyword 'rug store near me' (0 conversions, $47 spent). 3) Increase bid on 'persian rug cleaning scarborough' (+3 conversions expected)." Each recommendation includes expected impact.</div>
+    </div>
+    <div class="dd-callout purple">
+      <div class="dd-callout-title"><span class="claude-badge">Claude Code</span> Anomaly Detection</div>
+      <div class="dd-callout-text">Set up a weekly cron job: Claude compares this week's metrics to the 4-week rolling average. Alerts on significant changes: "CPC up 23% on 'rug cleaning scarborough' -- competitor may have increased bids. Recommendation: check Auction Insights report and consider bidding adjustment."</div>
+    </div>
+  </div>
+</div>
+`,
+
+// ──────────────────────────────────────────────
+// GOOGLE SEARCH ADS - ADVANCED TACTICS
+// ──────────────────────────────────────────────
+gsa_advanced: (node) => `
+<div class="dd-hero" style="border-left: 4px solid ${C.paid}">
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">Advanced Tactics</div>
+  <div class="dd-hero-sub">Once the core campaigns are running profitably, these advanced tactics can unlock additional growth and efficiency. Don't try these until the basics are working well.</div>
+  <div class="dd-hero-tags">
+    <span class="priority-tag priority-medium">MEDIUM PRIORITY</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Impact: 70/100</span>
+    <span class="dd-tag" style="background:${C.paid}15;color:${C.paid}">Month 3+</span>
+  </div>
+</div>
+<div class="dd-content">
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Advanced Campaign Types</div>
+    <div class="dd-grid">
+      <div class="dd-card">
+        <div class="dd-card-title">RLSA (Remarketing Lists for Search Ads)</div>
+        <div class="dd-card-desc">Show different ads (or bid higher) when someone who already visited your website searches again on Google. Example: Someone visited therugsspa.com/quotation last week, then searches "rug cleaning scarborough" again. Your RLSA campaign bids 50% higher and shows an ad: "Still thinking about it? Book today for free pickup." Conversion rates on RLSA are typically 2-3x higher than cold search.</div>
+      </div>
+      <div class="dd-card">
+        <div class="dd-card-title">Dynamic Search Ads (DSA)</div>
+        <div class="dd-card-desc">Google automatically generates ads based on your website content and matches them to relevant searches you might not have in your keyword lists. Good for discovering new keyword opportunities. Set up with a limited budget ($100/month) and mine it for new keyword ideas. Use negative keywords to prevent overlap with existing campaigns.</div>
+      </div>
+      <div class="dd-card">
+        <div class="dd-card-title">Performance Max (PMax)</div>
+        <div class="dd-card-desc">Google's AI-driven campaign type that runs across Search, Display, YouTube, Gmail, Maps, and Discover from a single campaign. Requires creative assets (images, videos, headlines, descriptions) and conversion data. Best used after you have 3+ months of conversion data. Can be very effective for local businesses but is a "black box" -- less control, more automation.</div>
+      </div>
+      <div class="dd-card">
+        <div class="dd-card-title">Competitor Campaigns</div>
+        <div class="dd-card-desc">Bid on competitor brand names (legal in Canada). When someone searches "[Competitor] rug cleaning", your ad appears: "Looking for Rug Cleaning? Try The Rug Spa -- $49.99 Any Rug + Free Pickup." Lower Quality Score (your landing page isn't about the competitor) means higher CPCs, but the intent is strong. Test with small budget first.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">When to Graduate to Advanced</div>
+    <ul class="dd-checklist">
+      <li>Core campaigns have been running for 2+ months with consistent conversions</li>
+      <li>You have 50+ conversions in the account (needed for smart bidding and audience building)</li>
+      <li>Core campaign ROAS is at or above target (don't add complexity to fix broken basics)</li>
+      <li>You've exhausted the main optimization levers (keywords, ad copy, landing pages)</li>
+      <li>Remarketing pixel has been installed for 30+ days (audience lists need time to build)</li>
+    </ul>
+  </div>
+</div>
+`,
+
+// ══════════════════════════════════════════════
+// GENERIC DEEP DIVE TEMPLATE (for nodes not yet fully built out)
+// ══════════════════════════════════════════════
+_generic: (node) => {
+  const d = node._resolvedDetail || {};
+  return `
+<div class="dd-hero" style="border-left: 4px solid ${node.color}">
+  <div class="dd-back" onclick="closeDeepDive()">&#8592; Back to map</div>
+  <div class="dd-hero-title">${node.name}</div>
+  <div class="dd-hero-sub">${d.what || node.description || 'Deep dive into ' + node.name + ' for The Rug Spa Scarborough.'}</div>
+  <div class="dd-hero-tags">
+    ${node.priority ? `<span class="priority-tag priority-${node.priority}">${node.priority.toUpperCase()} PRIORITY</span>` : ''}
+    ${node.impact ? `<span class="dd-tag" style="background:${node.color}15;color:${node.color}">Impact: ${node.impact}/100</span>` : ''}
+  </div>
+</div>
+<div class="dd-content">
+  ${d.rugSpaSpecific ? `
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Rug Spa \u2013 Specific Actions</div>
+    <ul class="dd-checklist">
+      ${d.rugSpaSpecific.map(item => `<li>${item}</li>`).join('')}
+    </ul>
+  </div>` : ''}
+
+  ${d.claudeWorkflow ? `
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Claude Code Workflows</div>
+    ${d.claudeWorkflow.map(item => `
+    <div class="dd-callout purple">
+      <div class="dd-callout-text"><span class="claude-badge">Claude Code</span> ${item}</div>
+    </div>`).join('')}
+  </div>` : ''}
+
+  ${d.metrics ? `
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Key Metrics</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      ${d.metrics.map(m => `<span class="dd-tag" style="background:var(--bg-card);color:var(--text-secondary);padding:6px 12px;border-radius:8px;font-size:12px;border:1px solid var(--border);">${m}</span>`).join('')}
+    </div>
+  </div>` : ''}
+
+  ${d.effort ? `
+  <div class="dd-section fade-up">
+    <div class="dd-section-header">Effort Estimate</div>
+    <div class="dd-section-text">${d.effort}</div>
+  </div>` : ''}
+
+  <div class="dd-section fade-up">
+    <div class="dd-callout blue">
+      <div class="dd-callout-title">This deep dive is ready for expansion</div>
+      <div class="dd-callout-text">This area has been mapped at the strategy level. When you're ready to work on it, a Claude Code team can be assigned to build out the complete end-to-end guide with step-by-step processes, templates, examples, and automated workflows -- just like the Google Search Ads deep dives.</div>
+    </div>
+  </div>
+</div>
+`}
+};
+
+// ══════════════════════════════════════════════
+// Generic detail data for nodes that use the template
+// ══════════════════════════════════════════════
+const genericDetails = {
+  content_blog: { what:'Create educational, SEO-optimized blog content about rug care, cleaning tips, stain removal guides, and rug types. Target local keywords like "rug cleaning Scarborough" and informational queries.', rugSpaSpecific:['Write "Ultimate Guide to Rug Cleaning in Scarborough" targeting local search','Create rug type guides: Persian, silk, wool, synthetic -- each optimized for search','Seasonal content: spring cleaning, winter salt stain removal, holiday prep','Customer story spotlights with before/after photos','Process walkthrough matching the 3-step process on the site'], claudeWorkflow:['Generate a full content calendar with keyword clusters','Skills-based blog pipeline: research \u2192 outline \u2192 draft \u2192 SEO optimize','Content repurposing: 1 blog \u2192 social posts, email snippet, video script','Automate meta descriptions, title tags, schema markup'], metrics:['Organic traffic growth','Keyword rankings','Time on page','Blog-to-quote conversion'], effort:'Medium - 2 articles/week, compound returns over time' },
+  content_video: { what:'Produce short-form and long-form video showing the satisfying rug cleaning process. Rug cleaning is inherently visual and satisfying -- #1 content type for virality.', rugSpaSpecific:['Film the 3-step process: assessment \u2192 washing \u2192 drying reveal','Before/after transformation reveals','Time-lapse of full cleaning process','"What we found in your rug" series -- dust/dirt extraction reveals','Customer reaction videos','Behind-the-scenes of 20,000 sq ft facility'], claudeWorkflow:['Generate video scripts with hooks, CTAs, trending audio suggestions','Build video content calendar aligned with seasonal trends','Batch production workflow: 10 scripts at once per platform','Generate captions, hashtag sets, descriptions per platform'], metrics:['Views per video','Follower growth','Video-to-website traffic','Shares and saves'], effort:'Medium - Batch film 1 day/week, distribute daily' },
+  content_photo: { what:'Build a comprehensive photo library of before/after rug transformations. These assets power every other marketing channel.', rugSpaSpecific:['Systematic before/after protocol for every rug','Standardize lighting and angle for consistency','Close-up detail: stain removal, fringe restoration, color revival','Facility photography: equipment, drying chamber, assessment area','Team photos for trust-building'], claudeWorkflow:['Generate photo shooting checklists and SOPs','Create alt text and descriptions for SEO','Photo-to-content pipeline: each set triggers social posts and testimonials'], metrics:['Photo library size','Usage across channels','Engagement on photo posts'], effort:'Low ongoing - 5 min per rug built into daily ops' },
+  content_copy: { what:'Create compelling copy for all touchpoints: website, landing pages, ad copy, email, brochures. Focus on emotional transformation.', rugSpaSpecific:['Refine "We Clean You Relax" into full messaging framework','Write location-specific Scarborough copy','Service descriptions that sell outcomes, not features','Urgency copy for $49.99 promo','Trust signals: expertise, facility size, free pickup'], claudeWorkflow:['Create brand voice document in CLAUDE.md','Copy variation generator: context \u2192 10 variations','A/B test headlines and CTAs across channels'], metrics:['CTR','Conversion rates by variant','Generation speed'], effort:'Low - Brand voice setup once, then fast generation' },
+  content_ugc: { what:'Encourage and leverage customer-created content. UGC is the most trusted marketing for local businesses.', rugSpaSpecific:['Create hashtag: #RugSpaTransformation','Discount for customers who post before/after','Weekly customer spotlight features','Photo booth at drop-off/pickup','Great reviews become social posts'], claudeWorkflow:['Automate UGC collection prompts in follow-ups','Response templates for customer posts','UGC curation workflow: collect \u2192 approve \u2192 repurpose'], metrics:['UGC submissions/month','Review growth','Social mentions'], effort:'Low - Systems-based, mainly automated' },
+  social_tiktok: { what:'TikTok is THE platform for rug cleaning content. "Satisfying cleaning" is one of the most popular categories. Multiple rug cleaning accounts have 1M+ followers.', rugSpaSpecific:['Content pillars: Satisfying cleans, Before/After, Educational, BTS, Customer reactions','Post 1-2x daily, batch film weekly','Trending sounds adapted to rug cleaning','Target satisfying/oddly satisfying communities','Showcase dirtiest rugs -- dirtier = more satisfying','Leverage industrial equipment -- "POV: Your rug enters the spa"','Create signature format for brand recognition'], claudeWorkflow:['Batch-generate 30 video scripts per session','Trend monitoring pipeline adapted to rug cleaning','Hashtag clusters: popular + niche','Posting schedule for GTA peak times','Comment response system','Cross-posting scripts: TikTok \u2192 Reels \u2192 Shorts'], metrics:['Followers','Average views','Viral videos (100K+)','Profile visits \u2192 website clicks'], effort:'High initial, Medium ongoing with batch filming' },
+  social_instagram: { what:'Instagram serves as visual portfolio and local discovery tool. ~41 followers currently = enormous growth opportunity.', rugSpaSpecific:['Reels: Repurpose TikTok content','Grid aesthetic: Consistent before/after layout','Stories: Daily BTS, polls, countdown for promos','Highlights: Services, Process, Transformations, Reviews','Location tagging for local discovery','Collaborate with interior designers'], claudeWorkflow:['Generate weekly grids: 3 Reels, 2 carousels, daily Stories','Caption templates with rotating CTAs','Hashtag strategy: 30 hashtags by reach tier','DM response templates'], metrics:['Follower growth (1K in 3 months)','Reels reach','Story engagement','Link clicks'], effort:'Medium - Repurposed from TikTok + quick daily Stories' },
+  social_facebook: { what:'Facebook remains #1 for local service business marketing in the GTA. Groups, Marketplace, and community pages drive leads.', rugSpaSpecific:['Optimize Scarborough Facebook page','Join community groups actively','Post in buy/sell groups where allowed','Facebook Events for seasonal promos','Share reviews as social proof','Create "Rug Care & Home Tips - Scarborough" group'], claudeWorkflow:['Generate community-appropriate value posts','Group content calendar: tips, Q&A, promos mix','Seasonal promotion campaigns','Review-to-testimonial pipeline'], metrics:['Page followers','Group members','Community post reach','Marketplace inquiries'], effort:'Medium - Consistent community engagement key' },
+  social_youtube: { what:'YouTube Shorts for viral reach + long-form for SEO. "How to clean a rug" videos rank in both YouTube and Google search.', rugSpaSpecific:['Shorts: Repurpose TikTok content','Long-form: "How We Clean a $10,000 Persian Rug"','Educational series: Rug care 101','Facility tour video','Customer testimonial compilations'], claudeWorkflow:['YouTube SEO: titles, descriptions, tags','Video scripts with chapter markers','Shorts calendar synced with TikTok','Community post generation'], metrics:['Shorts views','Watch time','Subscribers','Search impressions'], effort:'Low for Shorts, Medium for long-form monthly' },
+  social_gbp: { what:'Google Business Profile is the MOST important channel for a local service business. It determines Maps visibility and "near me" rankings.', rugSpaSpecific:['Fully optimize Scarborough GBP','Post weekly: offers, updates, events','Build to 50+ reviews with 4.8+ rating','Add all services as separate items','Seed Q&A proactively','Upload before/after photos weekly','Ensure NAP consistency everywhere'], claudeWorkflow:['Generate weekly GBP posts','Review request templates','Review response templates: positive and negative','GBP post calendar','Q&A pair generation','NAP consistency audit'], metrics:['GBP views','Search impressions','Direction requests','Phone calls','Review count & rating'], effort:'Medium initial, Low ongoing' },
+  social_nextdoor: { what:'Nextdoor and neighbourhood apps are where Scarborough homeowners ask for local recommendations.', rugSpaSpecific:['Claim Nextdoor business profile','Respond to recommendation requests','Share seasonal tips as local business','Encourage Nextdoor recommendations','Partner with other home service businesses'], claudeWorkflow:['Generate neighborly post templates','Response templates for requests','Cross-referral outreach workflow'], metrics:['Recommendations','Direct messages','Profile views'], effort:'Low - 15 min/week' },
+  paid_google_lsa: { what:'Local Services Ads appear at the very top of search with "Google Guaranteed" badge. Pay per lead, not per click.', rugSpaSpecific:['Get Google Guaranteed badge (background check + insurance)','Set service areas: Scarborough + surrounding','List all services with descriptions','Respond to leads within 5 minutes','Dispute invalid leads for refunds','Collect reviews through LSA platform'], claudeWorkflow:['Service descriptions for LSA matching','Lead response templates','Lead tracking automation','Weekly LSA reporting'], metrics:['Cost per lead','Lead volume','Lead-to-booking rate'], effort:'Medium setup (verification), Low ongoing' },
+  paid_meta: { what:'Meta Ads build awareness with visual content and retarget website visitors. Before/after ads are incredibly effective.', rugSpaSpecific:['Campaign types: Awareness (video), Leads (forms), Conversions (booking)','Target: Scarborough homeowners, 30-65, home improvement interests','Lookalike audiences from customer list','Before/after carousels, process videos, testimonials','$49.99 offer for lead gen','Retarget quote page visitors with testimonials','Seasonal campaigns: spring cleaning, holiday prep'], claudeWorkflow:['20+ ad variations per campaign with 4x4 Creative Matrix','Competitor ad library analysis','Creative testing roadmap','Landing page copy per campaign','Creative refresh every 2 weeks'], metrics:['CPM','CPC','Cost per lead','Lead quality','ROAS','Frequency'], effort:'High setup, Medium ongoing' },
+  paid_tiktok: { what:'TikTok Ads offer cheapest CPMs for video content. Boost organic content that already performs.', rugSpaSpecific:['Spark Ads: Boost top organic TikToks','In-Feed Ads: Satisfying transformations','Target: GTA, 25-55, home interests','Start with Spark Ads on proven content','Test $20-50/day before scaling','TikTok Lead Gen forms for quotes'], claudeWorkflow:['Identify top organic TikToks for Spark Ads','Native ad scripts','Audience testing frameworks','Cross organic/paid tracking'], metrics:['CPM ($5-15)','Video completion','Spark Ad lift','Cost per lead'], effort:'Low - Primarily boosting organic' },
+  paid_retargeting: { what:'Retargeting shows ads to website visitors who didn\'t convert. These warm leads need another nudge.', rugSpaSpecific:['Install Meta Pixel, Google Ads tag, TikTok Pixel','Segments: Homepage, Quote page, Service page, Blog readers','Ad sequence: Day 1-3 testimonials \u2192 Day 4-7 offer \u2192 Day 8-14 urgency','Cross-platform coverage','Exclude converters'], claudeWorkflow:['Audience segment definitions','Ad copy sequences per stage','Urgency variations for deep funnel','Attribution reporting'], metrics:['Retargeting conversion rate','Cost per conversion','View-through conversions'], effort:'Medium setup, Low ongoing' },
+  email_welcome: { what:'Automated 5-email sequence triggered on first contact. Sets the tone and moves toward booking.', rugSpaSpecific:['Email 1: "Welcome to The Rug Spa Family" -- story, expectations','Email 2: "How We Treat Your Rug Like Royalty" -- 3-step process','Email 3: "Don\'t Just Take Our Word" -- reviews and B/A photos','Email 4: "$49.99 Special - Limited Time" -- promotional offer','Email 5: "Free Pickup - We Come to You" -- remove friction'], claudeWorkflow:['Generate complete sequence with subject lines and body','5 subject line variations per email for A/B testing','Personalization tokens: name, rug type, neighborhood','HTML email templates in brand colors','Automation flow logic for any platform'], metrics:['Open rate (50%+ target)','Click rate','Sequence completion','Welcome-to-booking conversion'], effort:'Low - One-time setup, runs forever' },
+  email_followup: { what:'Automated follow-up for quote requests that didn\'t book. This is money on the table.', rugSpaSpecific:['Email 1 (1hr): Quote recap with booking CTA','Email 2 (Day 1): Address common objections','Email 3 (Day 3): Visual process walkthrough','Email 4 (Day 5): B/A transformation + urgency','Email 5 (Day 7): Final follow-up with sweetened offer','SMS companion: Text 30 min after quote'], claudeWorkflow:['Sequences with escalating urgency','Objection-handling copy: price, time, trust, convenience','Personalized variants by service type','Quote-to-booking pipeline automation'], metrics:['Quote-to-booking conversion','Best email in sequence','Time to conversion','Revenue recovered'], effort:'Low - One-time setup, massive ROI' },
+  email_retention: { what:'Keep past customers coming back. Rug cleaning recurs every 1-2 years.', rugSpaSpecific:['Post-service: care tips + review request','30-day: satisfaction check','6-month: cleaning reminder','12-month: anniversary discount','Holiday campaigns','Cross-sell: carpet, sofa, air duct'], claudeWorkflow:['Complete lifecycle email map','Seasonal campaigns','Cross-sell/upsell templates','Review timing optimization','Loyalty program framework'], metrics:['Repeat rate','Customer lifetime value','Time between services','Cross-sell conversion'], effort:'Low - Automated sequences from service date' },
+  email_newsletter: { what:'Monthly newsletter keeping Rug Spa top-of-mind with tips, offers, and community content.', rugSpaSpecific:['Format: 1 tip + 1 transformation + 1 offer','Short, visual, mobile-friendly','Seasonal themes','Feature team and facility','"Rug of the Month" showcase'], claudeWorkflow:['Generate content from existing blog/social','Auto-populate templates','Subject line variations','Automate assembly'], metrics:['Open rate','Click rate','Unsubscribe rate','Newsletter bookings'], effort:'Low - Monthly, 1-2 hours with Claude' },
+  email_review: { what:'Systematic review requests after service. Reviews are the lifeblood of local business.', rugSpaSpecific:['Send 1-2 days after delivery','Direct Google review link','Personal: "How does your [rug type] look?"','Include their B/A photo','Gentle reminder if no review in 3 days','Negative feedback interception: ask privately first'], claudeWorkflow:['Review request email/SMS templates','Negative feedback interception flow','Response templates for all platforms','Review monitoring and alerting','Review-to-content pipeline'], metrics:['Request rate','Completion rate','Average rating','Monthly new reviews'], effort:'Low - Fully automated' },
+  local_flyers: { what:'Physical flyers and door hangers in target Scarborough neighbourhoods with tracking codes.', rugSpaSpecific:['Target: Agincourt, Tam O\'Shanter, Bendale, Highland Creek','B/A photo, $49.99, free pickup, QR code','Door hangers: "We were in your neighbourhood today!"','Seasonal: spring + pre-holiday','Condo/apartment lobby placement','Unique promo codes per neighbourhood'], claudeWorkflow:['Flyer copy variations','Neighbourhood targeting by demographics','Tracking system: unique codes per area','Seasonal door hanger copy'], metrics:['Distributed count','Code redemptions','CPA by neighbourhood','ROI by drop area'], effort:'Medium - Design once, distribute regularly' },
+  local_partnerships: { what:'Build cross-referral partnerships with complementary local businesses.', rugSpaSpecific:['Interior designers: trade pricing','Real estate agents: pre-sale cleaning','Moving companies: co-marketing','Home cleaning services: rug referrals','Rug retailers: care partnership','Property managers: bulk deals','Insurance: restoration referrals'], claudeWorkflow:['Partnership outreach emails per type','Proposals with mutual value props','Referral tracking and commissions','Co-branded materials','Partner onboarding packages'], metrics:['Active partnerships','Referrals per partner','Partner-sourced revenue'], effort:'High initial outreach, Low ongoing' },
+  local_referral: { what:'Structured referral program incentivizing word-of-mouth. #1 driver for local services.', rugSpaSpecific:['"Give $20, Get $20" structure','Physical referral cards with tracking codes','Digital shareable link/code','Tiered: 1=$20, 3=free carpet, 5=free rug','Track in CRM, recognize top referrers','Announce in post-service follow-up'], claudeWorkflow:['Complete program structure and rules','Card copy and digital templates','Tracking and reward workflow','Request templates for post-service','Social sharing copy for customers'], metrics:['Referral rate','Referral-to-booking conversion','CPA via referral'], effort:'Low setup, Low ongoing' },
+  local_events: { what:'Community event participation for brand awareness and trust in Scarborough.', rugSpaSpecific:['Sponsor local events and cultural festivals','Home show and fair booths','Host "Rug Care Workshop" at facility','Partner with cultural communities','Charity: free cleaning for community center','Seasonal open house events'], claudeWorkflow:['Research Scarborough events','Booth materials generation','Event follow-up sequences','Community engagement calendar'], metrics:['Events attended','Contacts collected','Event-sourced bookings'], effort:'Medium - 1-2 events per quarter' },
+  local_vehicle: { what:'Brand pickup/delivery vehicles. Every delivery = mobile billboard in customer neighbourhoods.', rugSpaSpecific:['Full/partial wrap with B/A imagery','Large phone + website','Tagline: "We Clean, You Relax"','QR code on back','Clean professional design'], claudeWorkflow:['Vehicle wrap copy and concepts','Designer brief'], metrics:['Estimated impressions','"Saw your van" inquiries'], effort:'Low - One-time investment' },
+  local_directmail: { what:'Targeted postcards to higher-income Scarborough postal codes.', rugSpaSpecific:['Oversized postcard with B/A image','Single-family homes in premium codes','Include offer, free pickup, social proof','Spring (March) and fall (September) timing','Track via unique code or phone number','Canada Post Neighbourhood Mail'], claudeWorkflow:['Postcard copy A/B variations','Optimal postal code research','Campaign calendar','Response tracking'], metrics:['Response rate (1-3%)','CPA','Revenue per campaign'], effort:'Medium - Quarterly campaigns' },
+  seo_local: { what:'Local SEO gets The Rug Spa into the Google Maps "local pack" -- where most local searches end.', rugSpaSpecific:['GBP optimization','NAP consistency across ALL listings','Local citations on 50+ directories','Local keywords in all content','Content-rich Scarborough location page','Local backlinks','Embed Google Map','LocalBusiness + Service schema markup'], claudeWorkflow:['Complete citation audit across 50+ directories','Consistent NAP format generation','Location-specific content','JSON-LD schema markup','Local link building campaign','Monthly local SEO reporting'], metrics:['Maps ranking for target keywords','Local pack appearances','GBP impressions','Direction requests'], effort:'High initial, Low ongoing' },
+  seo_website: { what:'Optimize page speed, mobile experience, and conversion elements on the Wix site.', rugSpaSpecific:['Compress images, minimize JS','Mobile-first (80%+ searches are mobile)','Clear CTAs on every page','Click-to-call on mobile','Streamline quote form','Add trust elements','B/A gallery','Consider therugsspa.store (Next.js)'], claudeWorkflow:['Technical SEO audit','Optimized title tags and meta descriptions','Page-by-page content recommendations','Speed improvement checklist','A/B test hypotheses','Schema markup for all pages'], metrics:['Core Web Vitals','Bounce rate','Conversion rate','Mobile usability'], effort:'Medium - Wix has some limitations' },
+  seo_keywords: { what:'Map all ways customers search for rug cleaning to ensure coverage.', rugSpaSpecific:['Transactional: "rug cleaning scarborough"','Informational: "how to clean a persian rug"','Commercial: "best rug cleaner scarborough"','Long-tail: "silk rug cleaning specialist toronto"','Seasonal: "spring rug cleaning"','Service-specific: "oriental rug cleaning"'], claudeWorkflow:['Keyword universe with volumes and difficulty','Clusters mapped to content/pages','Content briefs per cluster','Weekly rank tracking','Competitor keyword gap analysis'], metrics:['Keywords in top 10','Organic traffic growth','Content coverage'], effort:'Medium initial, Low ongoing' },
+  seo_directories: { what:'Get listed on every relevant directory with consistent information for citation authority.', rugSpaSpecific:['Priority: Google, Yelp, HomeStars, Yellow Pages, BBB, Facebook','Industry: Carpet Cleaning Association','Local: Scarborough business directory','General: Apple Maps, Bing Places','Aggregators: Data Axle, Neustar','Niche: Houzz, Angi, Bark'], claudeWorkflow:['50+ directory submission checklist','Standardized descriptions (50, 150, 300 words)','Citation tracking spreadsheet','Category selections per directory','Quarterly consistency audits'], metrics:['Total citations','Consistency score','Referral traffic','Directory calls'], effort:'High initial, Low quarterly audits' },
+  seo_reviews: { what:'Systematic review generation and management. Currently very low review counts -- urgent.', rugSpaSpecific:['Goal: 50+ Google reviews in 6 months, 4.8+','Every customer gets a review request','Direct Google review link, one click','Respond to ALL reviews within 24 hours','Feature best reviews everywhere','Cross-platform: Google, Yelp, HomeStars','Staff incentive for named mentions'], claudeWorkflow:['Request templates: email, SMS, in-person','Response library: 20+ positive, 10+ negative frameworks','Monitoring dashboard','Review-to-social pipeline','Generation strategies by customer segment'], metrics:['Monthly new reviews','Average rating','Response time','Sentiment trends'], effort:'Low - Systematic automation' },
+  funnels_lead: { what:'Capture visitor info before they leave. Only ~3% fill out forms on first visit.', rugSpaSpecific:['Optimize quote form (fewer fields)','Pop-up: "$10 off" for email','Exit-intent: "Free rug care guide"','Chat widget with lead capture','SMS opt-in: "Text RUG for 15% off"','Click-to-call tracking','Social lead forms','QR codes on physical materials'], claudeWorkflow:['Design complete capture ecosystem','Popup copy A/B variations','Chatbot flows','Landing page copy per source','Lead routing automation'], metrics:['Capture rate by channel','Cost per lead','Lead-to-booking conversion','Response time'], effort:'Medium - Multiple touchpoints' },
+  funnels_booking: { what:'Optimize the path from interested to booked. Every friction step loses customers.', rugSpaSpecific:['Online booking without calling','Instant quote calculator: size + type + condition','One-click from GBP, FB, Instagram','Optimize Clover integration','Mobile: 3 steps max','Instant confirmation email + SMS','Deposit/payment at booking'], claudeWorkflow:['Map current flow, identify friction','Optimized form copy','Confirmation sequences','Quote calculator logic','Mobile-first 3-step design'], metrics:['Completion rate','Drop-off points','Time to booking','Mobile vs desktop'], effort:'Medium - May need platform changes' },
+  funnels_crm: { what:'CRM tracks every lead and customer. No lead falls through the cracks.', rugSpaSpecific:['Options: HubSpot Free, GoHighLevel, Jobber','Track: source, service, rug type, quote, status, history','Pipeline: Lead \u2192 Quoted \u2192 Booked \u2192 In Progress \u2192 Delivered \u2192 Follow-up','Automation: auto-assign, auto-quote, auto-follow-up','Segments: First-time, Repeat, VIP, Referrer, Lapsed','Integrate email, SMS, scheduling'], claudeWorkflow:['Complete pipeline and automation design','CRM setup guide','Automation sequences','Segmentation rules and messaging','Monthly CRM health report'], metrics:['Response time','Pipeline velocity','Conversion by stage','Follow-up compliance','CLV'], effort:'High initial, Low ongoing with automation' },
+  funnels_sms: { what:'SMS has 98% open rate. How customers prefer to communicate for local services.', rugSpaSpecific:['Appointment reminders','Status updates through cleaning process','Completion + delivery scheduling','Monthly flash deals','Review requests','CASL compliance: explicit opt-in + opt-out'], claudeWorkflow:['Templates for every touchpoint','Automation by service stage','Promotional SMS calendar','Opt-in capture mechanisms','Analytics tracking'], metrics:['List size','Open/response rates','Booking confirmations','Promo conversion rate'], effort:'Low - Quick setup with CRM or Twilio' },
+  funnels_chatbot: { what:'AI chatbot answers questions, captures leads, guides to booking 24/7.', rugSpaSpecific:['Handle: Pricing, turnaround, pickup area, rug types, process','Lead flow: "What type of rug?"','Booking assist: guide to form or phone','After-hours: capture info for morning call','FAQ automation','Feed leads to CRM'], claudeWorkflow:['Conversation trees for all scenarios','FAQ responses in brand voice','Escalation rules','Qualification questions','Iterate based on analytics'], metrics:['Chat engagement','Lead capture via chat','Chat-to-booking conversion'], effort:'Medium - Tidio, Drift, or Intercom' },
+  brand_voice: { what:'Define how The Rug Spa communicates everywhere. Becomes the CLAUDE.md that keeps all AI content on-brand.', rugSpaSpecific:['Core: "We\'re a spa for your rugs, not a cleaning company"','Tagline: "We Clean, You Relax"','Tone: Professional + warm, knowledgeable + approachable','Key messages: expertise, free pickup, spa care, value','Use: Transform, revive, restore, pamper, spa, care','Avoid: Cheap, discount, basic, wash','Avatar: Proud homeowner, values rugs, wants convenience'], claudeWorkflow:['Comprehensive CLAUDE.md brand voice file','Messaging framework: elevator to full story','Competitive positioning matrix','Persona documents with messaging variants','Brand voice test examples'], metrics:['Brand consistency across channels','Message recall','Brand sentiment in reviews'], effort:'Medium initial, then guides everything' },
+  brand_identity: { what:'Visual consistency across all materials builds recognition and trust.', rugSpaSpecific:['Evaluate current colors, fonts, logo usage','Simple brand guide: hex codes, fonts, logo rules, photo style','Social media templates','Print templates: flyer, card, brochure','Email templates in brand colors','Consistency between therugsspa.com and therugsspa.store'], claudeWorkflow:['Document current visual elements','Brand style guide','Social template descriptions','Creative asset checklist'], metrics:['Brand recognition','Visual consistency audit'], effort:'Medium - One-time guide, then templates' },
+  brand_testimonials: { what:'Systematically collect and deploy customer testimonials across all channels.', rugSpaSpecific:['Video testimonials: 30-sec clips after delivery','Written: Extract from Google/Yelp reviews','Case studies: "How we saved a 50-year-old Persian rug"','Statistics: "500+ rugs, 4.8/5, 100+ years"','Trust badges: Google Guaranteed, BBB, HomeStars','Deploy everywhere: site, ads, social, email, print'], claudeWorkflow:['Collection templates and interview questions','Case study pipeline: photos + story \u2192 formatted','Social proof deployment checklist','Review-to-testimonial automation','Trust badge copy'], metrics:['Testimonials collected','Usage across channels','Conversion impact'], effort:'Low - Built into post-service workflow' },
+  brand_beforeafter: { what:'Before/after transformations are THE most powerful marketing asset for rug cleaning.', rugSpaSpecific:['Standard protocol: same angle, lighting, B \u2192 during \u2192 A','Document every dramatic transformation','Website gallery by rug type and issue','Slider widgets (side-by-side drag)','Video: 15-sec transformation Reels/TikToks','Print: B/A postcards','Ads: B/A carousels are highest-performing format'], claudeWorkflow:['B/A photo SOP for staff','Captions and descriptions per transformation','Content pipeline: photos \u2192 social \u2192 gallery \u2192 ads','A/B test frameworks for B/A formats'], metrics:['B/A library size','Engagement rates','Conversion rates','Viral posts'], effort:'Low - 2 min per rug in daily workflow' },
+  analytics_tracking: { what:'Comprehensive tracking for every channel. Without it, you\'re flying blind.', rugSpaSpecific:['GA4 on therugsspa.com with conversion events','Google Tag Manager for centralized tags','Call tracking: CallRail or similar','UTM parameters on every link','Pixel tracking: Google, Meta, TikTok','CRM: lead source \u2192 booking \u2192 revenue','Weekly dashboard: leads, bookings, revenue, CPA, ROAS'], claudeWorkflow:['Complete tracking implementation plan','UTM naming conventions and link templates','Automated weekly/monthly reports','Looker Studio dashboard spec','Attribution model comparison'], metrics:['Data completeness %','Attribution accuracy','Reporting cadence'], effort:'High initial, Low ongoing with automation' },
+  analytics_competitor: { what:'Monitor competitors to identify opportunities and threats.', rugSpaSpecific:['Identify top 5-10 Scarborough competitors','Monitor: rankings, ads, social, pricing, reviews','Meta Ad Library for competitor ads','Track review counts and ratings','Website changes and new services','Identify gaps they don\'t cover'], claudeWorkflow:['Competitor tracking template','Monthly analysis reports','Competitive ad copy generation','Review monitoring','Positioning recommendations'], metrics:['Share of voice','Price positioning','Review comparison','Keyword gaps'], effort:'Low - Monthly automated check-ins' },
+  analytics_abtesting: { what:'Systematic A/B testing across all channels. Let data decide.', rugSpaSpecific:['Ad copy: headlines, descriptions, CTAs, offers','Email: subject lines, 2-3 variations per send','Landing pages: hero images, headlines, form placement','Pricing: "$49.99" vs "Under $50" vs "Save 60%"','CTAs: "Get a Quote" vs "Book Free Pickup"','Social: posting times, caption styles, formats'], claudeWorkflow:['Test hypotheses with impact/effort scoring','Test documentation: hypothesis, variants, metric, sample size','Result analysis templates','New variations from winners','Testing calendar and backlog'], metrics:['Tests per month','Win rate','Cumulative conversion lift','Revenue impact'], effort:'Low per test - Build into workflow' },
+  analytics_roi: { what:'Track ROI for every channel. Shift budget from low to high performers monthly.', rugSpaSpecific:['Cost per lead and CPA by channel','Customer lifetime value model','Monthly budget review: scale winners, cut losers','Attribution: which touchpoints drive bookings','Seasonal adjustments: more spring/fall','ROAS targets: Google 5x+, Meta 3x+'], claudeWorkflow:['Budget tracker and ROI calculator','Monthly optimization recommendations','CLV model for Rug Spa','ROAS reporting by channel','Budget allocation scenarios'], metrics:['Overall marketing ROAS','CPA trend','Budget utilization','Channel-level ROI'], effort:'Low - Monthly review with automated data' }
+};
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let currentNode = marketingData;
+let navigationStack = [];
+let panelOpen = false;
+let deepDiveOpen = false;
+let animating = false;
+
+// ══════════════════════════════════════════════
+// SVG RENDERING
+// ══════════════════════════════════════════════
+const svg = document.getElementById('graphSvg');
+
+function getCenter() {
+  const r = svg.getBoundingClientRect();
+  return { x: r.width / 2, y: r.height / 2 };
+}
+
+function renderGraph(node, animate = true) {
+  svg.innerHTML = '';
+  const center = getCenter();
+  const children = node.children || [];
+
+  // Defs
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const filter = document.createElementNS('http://www.w3.org/2000/svg','filter');
+  filter.setAttribute('id','glow');
+  filter.innerHTML = '<feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';
+  defs.appendChild(filter);
+  svg.appendChild(defs);
+
+  const radius = Math.min(center.x, center.y) * (children.length > 7 ? 0.58 : 0.52);
+
+  // Lines
+  children.forEach((child, i) => {
+    const a = (2*Math.PI*i/children.length) - Math.PI/2;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', center.x); line.setAttribute('y1', center.y);
+    line.setAttribute('x2', center.x + radius*Math.cos(a));
+    line.setAttribute('y2', center.y + radius*Math.sin(a));
+    line.setAttribute('class','link-line');
+    line.style.stroke = child.color + '30';
+    svg.appendChild(line);
+  });
+
+  // Center node
+  const cg = mkNode(center.x, center.y, node.name, node.subtitle||'', node.color, children.length>0?58:48, true, animate?0:-1);
+  cg.addEventListener('click', () => { if(node.description && !node.children) openPanel(node); });
+  svg.appendChild(cg);
+
+  // Pulse
+  const pulse = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  pulse.setAttribute('cx',center.x); pulse.setAttribute('cy',center.y);
+  pulse.setAttribute('r',63); pulse.setAttribute('fill','none');
+  pulse.setAttribute('stroke',node.color+'40'); pulse.setAttribute('stroke-width','1');
+  pulse.setAttribute('class','pulse-ring');
+  svg.insertBefore(pulse, cg);
+
+  // Children
+  children.forEach((child, i) => {
+    const a = (2*Math.PI*i/children.length) - Math.PI/2;
+    const x = center.x + radius*Math.cos(a);
+    const y = center.y + radius*Math.sin(a);
+    const sz = child.children ? 42 : 36;
+
+    const g = mkNode(x, y, child.name, child.subtitle||'', child.color, sz, false, animate?i:-1);
+    g.addEventListener('click', () => handleNodeClick(child));
+    g.addEventListener('mouseenter', e => showTooltip(e, child));
+    g.addEventListener('mousemove', e => moveTooltip(e));
+    g.addEventListener('mouseleave', hideTooltip);
+    svg.appendChild(g);
+
+    // Priority dot
+    if (child.priority) {
+      const pc = {high:'#f43f5e',medium:'#f59e0b',low:'#14b8a6'};
+      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx',x+sz-8); dot.setAttribute('cy',y-sz+8);
+      dot.setAttribute('r',5); dot.setAttribute('fill',pc[child.priority]);
+      if(animate) dot.style.animation=`nodeEnter 0.5s ease ${0.08*i+0.3}s both`;
+      svg.appendChild(dot);
+    }
+
+    // Child count badge
+    if (child.children) {
+      const bg = document.createElementNS('http://www.w3.org/2000/svg','g');
+      if(animate) bg.style.animation=`nodeEnter 0.5s ease ${0.08*i+0.3}s both`;
+      const bc = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      bc.setAttribute('cx',x+sz-4); bc.setAttribute('cy',y+sz-4); bc.setAttribute('r',11);
+      bc.setAttribute('fill','#1a2236'); bc.setAttribute('stroke',child.color); bc.setAttribute('stroke-width','1.5');
+      const bt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      bt.setAttribute('x',x+sz-4); bt.setAttribute('y',y+sz); bt.setAttribute('text-anchor','middle');
+      bt.setAttribute('fill',child.color); bt.setAttribute('font-size','11'); bt.setAttribute('font-weight','700');
+      bt.setAttribute('font-family','Inter,sans-serif'); bt.textContent=child.children.length;
+      bg.appendChild(bc); bg.appendChild(bt); svg.appendChild(bg);
+    }
+
+    // Deep dive indicator
+    if (child.deepDive && !child.children) {
+      const arrow = document.createElementNS('http://www.w3.org/2000/svg','text');
+      arrow.setAttribute('x',x); arrow.setAttribute('y',y+sz+18);
+      arrow.setAttribute('text-anchor','middle'); arrow.setAttribute('fill',child.color+'80');
+      arrow.setAttribute('font-size','11'); arrow.setAttribute('font-family','Inter,sans-serif');
+      arrow.textContent='Click to deep dive \u2192';
+      if(animate) arrow.style.animation=`nodeEnter 0.5s ease ${0.08*i+0.4}s both`;
+      svg.appendChild(arrow);
+    }
+
+    // Impact bar
+    if (child.impact && !child.children) {
+      const bw=50, bx=x-bw/2, by=y+sz+(child.deepDive?28:18);
+      const bbg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bbg.setAttribute('x',bx); bbg.setAttribute('y',by); bbg.setAttribute('width',bw);
+      bbg.setAttribute('height',4); bbg.setAttribute('rx',2); bbg.setAttribute('fill','#1e293b');
+      if(animate) bbg.style.animation=`nodeEnter 0.5s ease ${0.08*i+0.4}s both`;
+      const bf = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bf.setAttribute('x',bx); bf.setAttribute('y',by); bf.setAttribute('width',bw*child.impact/100);
+      bf.setAttribute('height',4); bf.setAttribute('rx',2); bf.setAttribute('fill',child.color);
+      if(animate) bf.style.animation=`nodeEnter 0.5s ease ${0.08*i+0.4}s both`;
+      svg.appendChild(bbg); svg.appendChild(bf);
+    }
+  });
+
+  updateBreadcrumb(); updateBackButton(); updateStats(node); updateLegend(node);
+}
+
+function mkNode(x,y,name,sub,color,size,isCenter,animIdx) {
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('class','node-group');
+  if(animIdx>=0) g.style.animation=`nodeEnter 0.5s ease ${0.08*animIdx}s both`;
+
+  const glow = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  glow.setAttribute('cx',x); glow.setAttribute('cy',y); glow.setAttribute('r',size+4);
+  glow.setAttribute('fill','none'); glow.setAttribute('stroke',color+'20'); glow.setAttribute('stroke-width','2');
+  g.appendChild(glow);
+
+  const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',size);
+  c.setAttribute('fill',color+'15'); c.setAttribute('stroke',color);
+  c.setAttribute('stroke-width',isCenter?2.5:1.5); c.setAttribute('class','node-circle');
+  g.appendChild(c);
+
+  const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',x); t.setAttribute('y',sub?y-4:y+4);
+  t.setAttribute('class','node-label'); t.setAttribute('font-size',isCenter?'15':'12');
+  t.textContent = name.length>20 ? name.substring(0,18)+'...' : name;
+  g.appendChild(t);
+
+  if(sub) {
+    const s = document.createElementNS('http://www.w3.org/2000/svg','text');
+    s.setAttribute('x',x); s.setAttribute('y',y+14); s.setAttribute('class','node-sublabel');
+    s.textContent=sub; g.appendChild(s);
+  }
+  return g;
+}
+
+// ══════════════════════════════════════════════
+// NODE CLICK HANDLING
+// ══════════════════════════════════════════════
+function handleNodeClick(node) {
+  if (animating) return;
+
+  // Has children? Navigate deeper in graph
+  if (node.children && node.children.length > 0) {
+    navigateTo(node);
+    return;
+  }
+
+  // Has deep dive content? Open deep dive page
+  if (node.deepDive) {
+    openDeepDive(node);
+    return;
+  }
+
+  // Fallback: open panel with generic detail
+  if (genericDetails[node.id]) {
+    node._resolvedDetail = genericDetails[node.id];
+  }
+  openPanel(node);
+}
+
+// ══════════════════════════════════════════════
+// DEEP DIVE PAGE
+// ══════════════════════════════════════════════
+function openDeepDive(node) {
+  const dd = document.getElementById('deepDive');
+  const contentFn = deepDiveContent[node.deepDive] || deepDiveContent._generic;
+
+  // For generic template, attach resolved detail
+  if (!deepDiveContent[node.deepDive] && genericDetails[node.id]) {
+    node._resolvedDetail = genericDetails[node.id];
+  }
+
+  dd.innerHTML = contentFn(node);
+  dd.scrollTop = 0;
+
+  // Show
+  dd.style.display = 'block';
+  requestAnimationFrame(() => { dd.classList.add('visible'); });
+
+  deepDiveOpen = true;
+  document.getElementById('canvasView').style.display = 'none';
+  document.getElementById('statsBar').style.display = 'none';
+  document.getElementById('legend').style.display = 'none';
+  document.getElementById('backBtn').style.display = 'none';
+
+  // Update breadcrumb
+  updateBreadcrumbForDeepDive(node);
+}
+
+function closeDeepDive() {
+  const dd = document.getElementById('deepDive');
+  dd.classList.remove('visible');
+  setTimeout(() => {
+    dd.style.display = 'none';
+    dd.innerHTML = '';
+  }, 350);
+  deepDiveOpen = false;
+
+  document.getElementById('canvasView').style.display = 'flex';
+  document.getElementById('statsBar').style.display = 'flex';
+  document.getElementById('legend').style.display = 'block';
+
+  updateBreadcrumb();
+  updateBackButton();
+}
+
+function updateBreadcrumbForDeepDive(node) {
+  const bc = document.getElementById('breadcrumb');
+  const path = [...navigationStack, currentNode];
+  let html = '';
+  path.forEach((n, i) => {
+    if (i > 0) html += '<span class="breadcrumb-sep">&#9656;</span>';
+    html += `<span class="breadcrumb-item" onclick="closeDeepDive();navigateToLevel(${i})">${n.name}</span>`;
+  });
+  html += `<span class="breadcrumb-sep">&#9656;</span>`;
+  html += `<span class="breadcrumb-item active" style="color:${node.color}">${node.name}</span>`;
+  bc.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function navigateTo(node) {
+  if(animating) return;
+  animating = true;
+  navigationStack.push(currentNode);
+  currentNode = node;
+  closePanel();
+  renderGraph(node, true);
+  setTimeout(() => { animating=false; }, 600);
+}
+
+function navigateBack() {
+  if (deepDiveOpen) { closeDeepDive(); return; }
+  if(animating || navigationStack.length===0) return;
+  animating = true;
+  currentNode = navigationStack.pop();
+  closePanel();
+  renderGraph(currentNode, true);
+  setTimeout(() => { animating=false; }, 600);
+}
+
+function navigateToLevel(level) {
+  if(animating) return;
+  animating = true;
+  while(navigationStack.length > level) currentNode = navigationStack.pop();
+  closePanel();
+  renderGraph(currentNode, true);
+  setTimeout(() => { animating=false; }, 600);
+}
+
+// ══════════════════════════════════════════════
+// DETAIL PANEL (for overview nodes)
+// ══════════════════════════════════════════════
+function openPanel(node) {
+  const panel = document.getElementById('detailPanel');
+  document.getElementById('detailTitle').textContent = node.name;
+  const cat = document.getElementById('detailCategory');
+  cat.textContent = [...navigationStack.map(n=>n.name), currentNode.name].join(' > ');
+  cat.style.color = node.color;
+
+  const d = node._resolvedDetail || {};
+  let html = '';
+
+  if(node.priority || node.impact) {
+    html += '<div class="detail-section" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">';
+    if(node.priority) { const pc={high:'priority-high',medium:'priority-medium',low:'priority-low'}; html+=`<span class="priority-tag ${pc[node.priority]}">${node.priority.toUpperCase()}</span>`; }
+    if(node.impact) html+=`<div style="flex:1;min-width:100px;"><div style="font-size:11px;color:var(--text-muted);">Impact: ${node.impact}/100</div><div class="impact-meter"><div class="impact-fill" style="width:${node.impact}%"></div></div></div>`;
+    html += '</div>';
+  }
+
+  if(d.what) html+=`<div class="detail-section"><div class="detail-section-title">Overview</div><div class="detail-text">${d.what}</div></div>`;
+  else if(node.description) html+=`<div class="detail-section"><div class="detail-section-title">Overview</div><div class="detail-text">${node.description}</div></div>`;
+
+  if(node.claudeTools) html+=`<div class="detail-section"><div class="detail-section-title">Claude Code Capabilities</div><div style="display:flex;flex-wrap:wrap;gap:6px;">${node.claudeTools.map(t=>`<span class="claude-badge">${t}</span>`).join('')}</div></div>`;
+
+  if(d.rugSpaSpecific) html+=`<div class="detail-section"><div class="detail-section-title">Rug Spa Actions</div><ul class="detail-list">${d.rugSpaSpecific.map(i=>`<li style="border-left-color:${node.color}">${i}</li>`).join('')}</ul></div>`;
+  if(d.claudeWorkflow) html+=`<div class="detail-section"><div class="detail-section-title">Claude Code Workflows</div><ul class="detail-list">${d.claudeWorkflow.map(i=>`<li style="border-left-color:var(--accent-purple);background:rgba(139,92,246,0.08);"><span class="claude-badge">Claude</span> ${i}</li>`).join('')}</ul></div>`;
+  if(d.metrics) html+=`<div class="detail-section"><div class="detail-section-title">Key Metrics</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${d.metrics.map(m=>`<span style="padding:3px 8px;border-radius:6px;background:var(--bg-card);font-size:12px;color:var(--text-secondary);">${m}</span>`).join('')}</div></div>`;
+  if(d.effort) html+=`<div class="detail-section"><div class="detail-section-title">Effort</div><div class="detail-text">${d.effort}</div></div>`;
+
+  document.getElementById('detailBody').innerHTML = html;
+  panel.classList.add('open');
+  panelOpen = true;
+}
+
+function closePanel() {
+  document.getElementById('detailPanel').classList.remove('open');
+  panelOpen = false;
+}
+
+// ══════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════
+function updateBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  const path = [...navigationStack, currentNode];
+  let html = '';
+  path.forEach((n,i) => {
+    if(i>0) html+='<span class="breadcrumb-sep">&#9656;</span>';
+    const last = i===path.length-1;
+    html+=`<span class="breadcrumb-item ${last?'active':''}" onclick="${last?'':`navigateToLevel(${i})`}" style="${last?`color:${n.color}`:''}">${n.name}</span>`;
+  });
+  bc.innerHTML = html;
+}
+
+function updateBackButton() {
+  document.getElementById('backBtn').classList.toggle('visible', navigationStack.length>0);
+}
+
+function updateStats(node) {
+  const ch = node.children||[];
+  const hi = ch.filter(c=>c.priority==='high').length;
+  const md = ch.filter(c=>c.priority==='medium').length;
+  const exp = ch.filter(c=>c.children).length;
+  const dd = ch.filter(c=>c.deepDive).length;
+  const bar = document.getElementById('statsBar');
+  bar.innerHTML = `
+    <div class="stat-chip"><span class="stat-number" style="color:var(--accent-blue)">${ch.length}</span><span class="stat-label">Areas</span></div>
+    <div class="stat-chip"><span class="stat-number" style="color:var(--accent-rose)">${hi}</span><span class="stat-label">High Priority</span></div>
+    <div class="stat-chip"><span class="stat-number" style="color:var(--accent-amber)">${md}</span><span class="stat-label">Medium</span></div>
+    ${exp?`<div class="stat-chip"><span class="stat-number" style="color:var(--accent-teal)">${exp}</span><span class="stat-label">Expandable</span></div>`:''}
+    ${dd?`<div class="stat-chip"><span class="stat-number" style="color:var(--accent-purple)">${dd}</span><span class="stat-label">Deep Dives</span></div>`:''}
+  `;
+}
+
+function updateLegend(node) {
+  const legend = document.getElementById('legend');
+  const ch = node.children||[];
+  if(!ch.length) { legend.style.opacity=0; return; }
+  legend.style.opacity=1;
+  const hasDD = ch.some(c=>c.deepDive);
+  legend.innerHTML = `
+    <div class="legend-title">Priority</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-rose)"></div><span class="legend-label">High</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-amber)"></div><span class="legend-label">Medium</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-teal)"></div><span class="legend-label">Low</span></div>
+    <div style="margin-top:8px" class="legend-title">Actions</div>
+    <div class="legend-item"><span class="legend-label">Click to drill down</span></div>
+    ${hasDD?'<div class="legend-item"><span class="legend-label">Deep dive \u2192 full page</span></div>':''}
+  `;
+}
+
+// ══════════════════════════════════════════════
+// TOOLTIP
+// ══════════════════════════════════════════════
+function showTooltip(e, node) {
+  const tt = document.getElementById('tooltip');
+  document.getElementById('tooltipTitle').textContent = node.name;
+  let desc = node.children ? `${node.children.length} sub-areas \u2013 Click to explore` :
+    node.deepDive ? 'Click for full deep dive \u2192' :
+    node.description ? node.description.substring(0,120)+'...' : '';
+  document.getElementById('tooltipDesc').textContent = desc;
+  tt.classList.add('visible');
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const tt = document.getElementById('tooltip');
+  tt.style.left=(e.clientX+16)+'px'; tt.style.top=(e.clientY+16)+'px';
+}
+function hideTooltip() { document.getElementById('tooltip').classList.remove('visible'); }
+
+// ══════════════════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape') {
+    if(deepDiveOpen) closeDeepDive();
+    else if(panelOpen) closePanel();
+    else if(navigationStack.length>0) navigateBack();
+  }
+  if(e.key==='Backspace' && !e.target.matches('input')) { e.preventDefault(); navigateBack(); }
+});
+
+// ══════════════════════════════════════════════
+// RESIZE + INIT
+// ══════════════════════════════════════════════
+window.addEventListener('resize', () => { if(!deepDiveOpen) renderGraph(currentNode, false); });
+renderGraph(marketingData, true);
+</script>
+</body>
+</html>
