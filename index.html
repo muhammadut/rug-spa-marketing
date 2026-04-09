@@ -1388,17 +1388,27 @@ function renderGraph(node, animate = true) {
   svg.appendChild(defs);
 
   const isMobile = window.innerWidth <= 768;
-  const radiusMult = isMobile ? (children.length > 7 ? 0.42 : 0.38) : (children.length > 7 ? 0.58 : 0.52);
-  const radius = Math.min(center.x, center.y) * radiusMult;
-  const centerSize = isMobile ? (children.length>0?38:30) : (children.length>0?58:48);
+  const centerSize = isMobile ? (children.length>0?30:24) : (children.length>0?58:48);
+
+  // On mobile use elliptical layout to fill portrait screens; circular on desktop
+  const manyNodes = children.length > 7;
+  let rx, ry;
+  if (isMobile) {
+    rx = center.x * (manyNodes ? 0.82 : 0.72);
+    ry = center.y * (manyNodes ? 0.68 : 0.62);
+  } else {
+    const r = Math.min(center.x, center.y) * (children.length > 7 ? 0.58 : 0.52);
+    rx = r;
+    ry = r;
+  }
 
   // Lines
   children.forEach((child, i) => {
     const a = (2*Math.PI*i/children.length) - Math.PI/2;
     const line = document.createElementNS('http://www.w3.org/2000/svg','line');
     line.setAttribute('x1', center.x); line.setAttribute('y1', center.y);
-    line.setAttribute('x2', center.x + radius*Math.cos(a));
-    line.setAttribute('y2', center.y + radius*Math.sin(a));
+    line.setAttribute('x2', center.x + rx*Math.cos(a));
+    line.setAttribute('y2', center.y + ry*Math.sin(a));
     line.setAttribute('class','link-line');
     line.style.stroke = child.color + '30';
     svg.appendChild(line);
@@ -1420,11 +1430,12 @@ function renderGraph(node, animate = true) {
   // Children
   children.forEach((child, i) => {
     const a = (2*Math.PI*i/children.length) - Math.PI/2;
-    const x = center.x + radius*Math.cos(a);
-    const y = center.y + radius*Math.sin(a);
-    const sz = isMobile ? (child.children ? 28 : 24) : (child.children ? 42 : 36);
+    const x = center.x + rx*Math.cos(a);
+    const y = center.y + ry*Math.sin(a);
+    const sz = isMobile ? (manyNodes ? 16 : (child.children ? 20 : 18)) : (child.children ? 42 : 36);
 
-    const g = mkNode(x, y, child.name, child.subtitle||'', child.color, sz, false, animate?i:-1);
+    const showSub = !(isMobile && manyNodes);
+    const g = mkNode(x, y, child.name, showSub ? (child.subtitle||'') : '', child.color, sz, false, animate?i:-1);
     g.addEventListener('click', () => handleNodeClick(child));
     g.addEventListener('mouseenter', e => showTooltip(e, child));
     g.addEventListener('mousemove', e => moveTooltip(e));
