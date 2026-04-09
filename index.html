@@ -346,6 +346,72 @@
     to { opacity: 1; transform: translateY(0); }
   }
   .fade-up { animation: fadeUp 0.4s ease both; }
+
+  /* ══════════════════════════════════════════════
+     MOBILE RESPONSIVE
+     ══════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    body { overflow: hidden; }
+
+    .header { padding: 10px 14px; }
+    .header-left { gap: 8px; }
+    .logo { font-size: 14px; }
+    .header-badge { font-size: 9px; padding: 2px 7px; }
+
+    .breadcrumb { padding: 6px 14px; gap: 5px; font-size: 11px; top: 46px; }
+    .canvas { top: 76px; }
+
+    .back-btn { top: 84px; left: 10px; padding: 6px 12px; font-size: 12px; }
+
+    /* Detail panel becomes full-screen overlay on mobile */
+    .detail-panel {
+      position: fixed; top: 76px; left: 0; right: 0; bottom: 0;
+      width: 100% !important; z-index: 90;
+      border-left: none; border-top: 1px solid var(--border);
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), width 0s;
+    }
+    .detail-panel.open {
+      width: 100% !important;
+      transform: translateY(0);
+    }
+    .detail-header { padding: 16px; }
+    .detail-title { font-size: 18px; }
+    .detail-body { padding: 16px; }
+
+    /* Stats bar */
+    .stats-bar { bottom: 10px; border-radius: 12px; padding: 2px; }
+    .stat-chip { padding: 5px 10px; font-size: 10px; }
+    .stat-number { font-size: 13px; }
+    .stat-label { font-size: 9px; }
+
+    /* Hide legend on mobile */
+    .legend { display: none !important; }
+
+    /* Deep dive pages */
+    .deep-dive { top: 76px; }
+    .dd-hero { padding: 24px 18px 20px; }
+    .dd-hero-title { font-size: 24px; }
+    .dd-hero-sub { font-size: 14px; }
+    .dd-content { padding: 20px 18px 60px; }
+    .dd-grid { grid-template-columns: 1fr; gap: 14px; }
+    .dd-step { padding: 14px; gap: 12px; }
+    .dd-step-num { width: 30px; height: 30px; font-size: 12px; }
+    .dd-callout { padding: 14px 16px; }
+    .dd-table { font-size: 12px; display: block; overflow-x: auto; }
+    .dd-table th, .dd-table td { padding: 8px 10px; white-space: nowrap; }
+    .dd-checklist li { padding: 8px 10px; font-size: 12px; }
+    .dd-card { padding: 16px; }
+
+    .tooltip { display: none !important; }
+  }
+
+  @media (max-width: 480px) {
+    .logo { font-size: 12px; }
+    .header-badge { display: none; }
+    .dd-hero-title { font-size: 20px; }
+    .dd-table th, .dd-table td { padding: 6px 8px; font-size: 11px; }
+  }
 </style>
 </head>
 <body>
@@ -1321,7 +1387,10 @@ function renderGraph(node, animate = true) {
   defs.appendChild(filter);
   svg.appendChild(defs);
 
-  const radius = Math.min(center.x, center.y) * (children.length > 7 ? 0.58 : 0.52);
+  const isMobile = window.innerWidth <= 768;
+  const radiusMult = isMobile ? (children.length > 7 ? 0.42 : 0.38) : (children.length > 7 ? 0.58 : 0.52);
+  const radius = Math.min(center.x, center.y) * radiusMult;
+  const centerSize = isMobile ? (children.length>0?38:30) : (children.length>0?58:48);
 
   // Lines
   children.forEach((child, i) => {
@@ -1336,14 +1405,14 @@ function renderGraph(node, animate = true) {
   });
 
   // Center node
-  const cg = mkNode(center.x, center.y, node.name, node.subtitle||'', node.color, children.length>0?58:48, true, animate?0:-1);
+  const cg = mkNode(center.x, center.y, node.name, node.subtitle||'', node.color, centerSize, true, animate?0:-1);
   cg.addEventListener('click', () => { if(node.description && !node.children) openPanel(node); });
   svg.appendChild(cg);
 
   // Pulse
   const pulse = document.createElementNS('http://www.w3.org/2000/svg','circle');
   pulse.setAttribute('cx',center.x); pulse.setAttribute('cy',center.y);
-  pulse.setAttribute('r',63); pulse.setAttribute('fill','none');
+  pulse.setAttribute('r',centerSize+5); pulse.setAttribute('fill','none');
   pulse.setAttribute('stroke',node.color+'40'); pulse.setAttribute('stroke-width','1');
   pulse.setAttribute('class','pulse-ring');
   svg.insertBefore(pulse, cg);
@@ -1353,7 +1422,7 @@ function renderGraph(node, animate = true) {
     const a = (2*Math.PI*i/children.length) - Math.PI/2;
     const x = center.x + radius*Math.cos(a);
     const y = center.y + radius*Math.sin(a);
-    const sz = child.children ? 42 : 36;
+    const sz = isMobile ? (child.children ? 28 : 24) : (child.children ? 42 : 36);
 
     const g = mkNode(x, y, child.name, child.subtitle||'', child.color, sz, false, animate?i:-1);
     g.addEventListener('click', () => handleNodeClick(child));
@@ -1366,28 +1435,31 @@ function renderGraph(node, animate = true) {
     if (child.priority) {
       const pc = {high:'#f43f5e',medium:'#f59e0b',low:'#14b8a6'};
       const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      dot.setAttribute('cx',x+sz-8); dot.setAttribute('cy',y-sz+8);
-      dot.setAttribute('r',5); dot.setAttribute('fill',pc[child.priority]);
+      const dotR = isMobile ? 3 : 5;
+      dot.setAttribute('cx',x+sz-(isMobile?4:8)); dot.setAttribute('cy',y-sz+(isMobile?4:8));
+      dot.setAttribute('r',dotR); dot.setAttribute('fill',pc[child.priority]);
       if(animate) dot.style.animation=`nodeEnter 0.5s ease ${0.08*i+0.3}s both`;
       svg.appendChild(dot);
     }
 
     // Child count badge
     if (child.children) {
+      const badgeR = isMobile ? 7 : 11;
+      const badgeOff = isMobile ? -2 : -4;
       const bg = document.createElementNS('http://www.w3.org/2000/svg','g');
       if(animate) bg.style.animation=`nodeEnter 0.5s ease ${0.08*i+0.3}s both`;
       const bc = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      bc.setAttribute('cx',x+sz-4); bc.setAttribute('cy',y+sz-4); bc.setAttribute('r',11);
+      bc.setAttribute('cx',x+sz+badgeOff); bc.setAttribute('cy',y+sz+badgeOff); bc.setAttribute('r',badgeR);
       bc.setAttribute('fill','#1a2236'); bc.setAttribute('stroke',child.color); bc.setAttribute('stroke-width','1.5');
       const bt = document.createElementNS('http://www.w3.org/2000/svg','text');
-      bt.setAttribute('x',x+sz-4); bt.setAttribute('y',y+sz); bt.setAttribute('text-anchor','middle');
-      bt.setAttribute('fill',child.color); bt.setAttribute('font-size','11'); bt.setAttribute('font-weight','700');
+      bt.setAttribute('x',x+sz+badgeOff); bt.setAttribute('y',y+sz+badgeOff+4); bt.setAttribute('text-anchor','middle');
+      bt.setAttribute('fill',child.color); bt.setAttribute('font-size',isMobile?'8':'11'); bt.setAttribute('font-weight','700');
       bt.setAttribute('font-family','Inter,sans-serif'); bt.textContent=child.children.length;
       bg.appendChild(bc); bg.appendChild(bt); svg.appendChild(bg);
     }
 
-    // Deep dive indicator
-    if (child.deepDive && !child.children) {
+    // Deep dive indicator (hide on mobile)
+    if (child.deepDive && !child.children && !isMobile) {
       const arrow = document.createElementNS('http://www.w3.org/2000/svg','text');
       arrow.setAttribute('x',x); arrow.setAttribute('y',y+sz+18);
       arrow.setAttribute('text-anchor','middle'); arrow.setAttribute('fill',child.color+'80');
@@ -1397,8 +1469,8 @@ function renderGraph(node, animate = true) {
       svg.appendChild(arrow);
     }
 
-    // Impact bar
-    if (child.impact && !child.children) {
+    // Impact bar (hide on mobile)
+    if (child.impact && !child.children && !isMobile) {
       const bw=50, bx=x-bw/2, by=y+sz+(child.deepDive?28:18);
       const bbg = document.createElementNS('http://www.w3.org/2000/svg','rect');
       bbg.setAttribute('x',bx); bbg.setAttribute('y',by); bbg.setAttribute('width',bw);
@@ -1416,13 +1488,14 @@ function renderGraph(node, animate = true) {
 }
 
 function mkNode(x,y,name,sub,color,size,isCenter,animIdx) {
+  const mob = window.innerWidth <= 768;
   const g = document.createElementNS('http://www.w3.org/2000/svg','g');
   g.setAttribute('class','node-group');
   if(animIdx>=0) g.style.animation=`nodeEnter 0.5s ease ${0.08*animIdx}s both`;
 
   const glow = document.createElementNS('http://www.w3.org/2000/svg','circle');
-  glow.setAttribute('cx',x); glow.setAttribute('cy',y); glow.setAttribute('r',size+4);
-  glow.setAttribute('fill','none'); glow.setAttribute('stroke',color+'20'); glow.setAttribute('stroke-width','2');
+  glow.setAttribute('cx',x); glow.setAttribute('cy',y); glow.setAttribute('r',size+3);
+  glow.setAttribute('fill','none'); glow.setAttribute('stroke',color+'20'); glow.setAttribute('stroke-width', mob?'1':'2');
   g.appendChild(glow);
 
   const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
@@ -1431,16 +1504,21 @@ function mkNode(x,y,name,sub,color,size,isCenter,animIdx) {
   c.setAttribute('stroke-width',isCenter?2.5:1.5); c.setAttribute('class','node-circle');
   g.appendChild(c);
 
+  const labelSize = mob ? (isCenter?'11':'9') : (isCenter?'15':'12');
+  const maxLen = mob ? 14 : 20;
   const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-  t.setAttribute('x',x); t.setAttribute('y',sub?y-4:y+4);
-  t.setAttribute('class','node-label'); t.setAttribute('font-size',isCenter?'15':'12');
-  t.textContent = name.length>20 ? name.substring(0,18)+'...' : name;
+  t.setAttribute('x',x); t.setAttribute('y', sub ? y-(mob?2:4) : y+(mob?3:4));
+  t.setAttribute('class','node-label'); t.setAttribute('font-size', labelSize);
+  t.textContent = name.length>maxLen ? name.substring(0,maxLen-2)+'..' : name;
   g.appendChild(t);
 
   if(sub) {
+    const subSize = mob ? '7' : '11';
     const s = document.createElementNS('http://www.w3.org/2000/svg','text');
-    s.setAttribute('x',x); s.setAttribute('y',y+14); s.setAttribute('class','node-sublabel');
-    s.textContent=sub; g.appendChild(s);
+    s.setAttribute('x',x); s.setAttribute('y',y+(mob?8:14)); s.setAttribute('class','node-sublabel');
+    s.setAttribute('font-size', subSize);
+    s.textContent = mob ? (sub.length > 16 ? sub.substring(0,14)+'..' : sub) : sub;
+    g.appendChild(s);
   }
   return g;
 }
